@@ -109,10 +109,10 @@ namespace MahjongAccount.Controllers
 
             // 检查牌局是否存在且未结束
             var game = await _context.Games
-                .FirstOrDefaultAsync(g => g.Id == gameId && g.Status == "ongoing");
+                .FirstOrDefaultAsync(g => g.Id == gameId);
 
             if (game == null)
-                return Content("牌局不存在或已结束");
+                return RedirectToAction("SimpleError", "Home", new { message = "牌局不存在" });
 
             // 检查是否已在牌局中
             var isAlreadyJoined = await _context.GamePlayers
@@ -142,9 +142,7 @@ namespace MahjongAccount.Controllers
                 .FirstOrDefaultAsync(g => g.Id == gameId);
 
             if (game == null)
-            {
-                return NotFound();
-            }
+                return RedirectToAction("SimpleError", "Home", new { message = "牌局不存在" });
 
             // 获取当前用户ID
             var currentUserId = GetCurrentUserId();
@@ -371,7 +369,7 @@ namespace MahjongAccount.Controllers
                 .FirstOrDefaultAsync(g => g.Id == gameId && g.Status == "ended");
 
             if (game == null)
-                return Content("牌局不存在或未结束");
+                return RedirectToAction("Join", "Game", new { gameId });
 
             // 当前用户结果
             var currentUserResultEntity = await _context.GameResults

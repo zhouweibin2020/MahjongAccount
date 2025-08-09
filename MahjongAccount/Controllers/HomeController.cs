@@ -358,6 +358,14 @@ public class HomeController : Controller
             .ToListAsync<ExtremeDto>();
     }
 
+    public IActionResult SimpleError(string message, string title = "")
+    {
+        ViewData["title"] = title;
+        ViewData["message"] = message;
+
+        return View();
+    }
+
     // 退出登录/切换用户（与Session机制匹配）
     public IActionResult Logout()
     {
