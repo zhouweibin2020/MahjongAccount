@@ -1,0 +1,104 @@
+﻿@{
+    Layout = null;
+}
+@model IEnumerable<MahjongAccount.Models.User>
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>选择用户 - 麻将记账</title>
+    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <style>
+        .page-title {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .user-list {
+            padding: 15px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-nickname {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .create-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-title">选择用户</div>
+
+    <div class="user-list">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var user in Model)
+            {
+                <a href="@Url.Action("ChooseUser", "User", new { userId = user.Id })" class="user-item">
+                    <img src="@(user.Avatar != null 
+                        ? $"data:image/jpeg;base64,{Convert.ToBase64String(user.Avatar)}" 
+                        : $"https://picsum.photos/50/50?random={user.Id}")"
+                        alt="@user.Nickname 的头像" class="user-avatar">
+                    <div class="user-info">
+                        <div class="user-nickname">@user.Nickname</div>
+                        <div class="weui-cell__desc">点击进入</div>
+                    </div>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            }
+        }
+        else
+        {
+            <div class="weui-msg">
+                <div class="weui-msg__icon-area"><i class="weui-icon-info-circle weui-icon_msg"></i></div>
+                <div class="weui-msg__text-area">
+                    <h2 class="weui-msg__title">暂无用户</h2>
+                    <p class="weui-msg__desc">请创建第一个用户开始使用</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <a asp-action="Create" class="create-btn">
+        <button class="weui-btn weui-btn_primary">创建新用户</button>
+    </a>
+</body>
+
+</html>

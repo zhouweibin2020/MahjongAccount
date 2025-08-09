@@ -1,0 +1,100 @@
+﻿# 编译输出
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.dll.config
+*.cache
+*.suo
+*.user
+*.nupkg
+*.log
+*.vspscc
+*.vssscc
+_ReSharper.*
+*.sdf
+*.opensdf
+*.opendb
+*.VC.db
+*.psess
+*.ipch
+*.aps
+*.ncb
+*.ilk
+*.pgc
+*.pgd
+*.rsp
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.idb
+*.pch
+*.dep
+*.xml
+
+# 测试输出
+TestResults/
+coverage/
+*.coverage
+
+# 发布输出
+publish/
+dist/
+out/
+
+# 工具和IDE配置
+.vs/
+.vscode/
+*.code-workspace
+*.csproj.user
+*.sln.docstates
+*.sln.user
+.DS_Store
+Thumbs.db
+
+# 环境配置和敏感信息
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.Production.json
+*.env
+*.key
+*.pfx
+*.cer
+*.pem
+secrets.json
+config.json
+connectionstrings.json
+
+# 包管理
+packages/
+.nuget/
+. paket/
+paket-files/
+ paket.lock
+project.lock.json
+global.json
+NuGet.Config
+
+# 日志
+logs/
+*.log
+*.lck
+
+# 临时文件
+tmp/
+temp/
+~$*
+
+# 构建脚本生成的文件
+build/
+BuildOutput/
+
+
+# Entity Framework Core 迁移临时文件
+Migrations/
+    
+/MahjongAccount/database.db
+/MahjongAccount/database.db-shm
+/MahjongAccount/database.db-wal

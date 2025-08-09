@@ -1,0 +1,382 @@
+﻿@model MahjongAccount.Controllers.IndexViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>麻将记账 - 首页</title>
+    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <style>
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user-nickname {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .user-stats {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .menu-item {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px 15px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s;
+        }
+
+            .menu-item:active {
+                transform: scale(0.98);
+            }
+
+        .menu-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: #1AAD19;
+        }
+
+        .menu-text {
+            font-size: 16px;
+        }
+
+        .weui-tabbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        body {
+            padding-bottom: 50px;
+            background-color: #f5f5f5;
+        }
+
+        /* 底部弹窗容器 */
+        .weui-actionsheet-container {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        /* 遮罩层样式 */
+        .weui-mask {
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .weui-mask--visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 弹窗内容样式 */
+        .weui-actionsheet {
+            position: relative;
+            transform: translate(0, 100%);
+            -webkit-transform: translate(0, 100%);
+            transition: transform 0.3s;
+            -webkit-transition: -webkit-transform 0.3s;
+            background-color: #f7f7f7;
+            pointer-events: auto;
+        }
+
+        .weui-actionsheet--visible {
+            transform: translate(0, 0);
+            -webkit-transform: translate(0, 0);
+        }
+
+        /* 弹窗标题 */
+        .weui-actionsheet__header {
+            padding: 15px 15px 10px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .weui-actionsheet__title {
+            font-size: 16px;
+            color: #000;
+            margin: 0;
+        }
+
+        /* 滚动内容区域 */
+        .weui-actionsheet__body {
+            max-height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background-color: #fff;
+        }
+
+        /* 底部按钮区域 */
+        .weui-actionsheet__footer {
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #f7f7f7;
+        }
+
+        .weui-actionsheet__btn {
+            display: block;
+            width: 100%;
+            padding: 12px 0;
+            font-size: 17px;
+        }
+
+        /* 牌局列表项样式 */
+        .game-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+            .game-item:last-child {
+                border-bottom: none;
+            }
+
+        .game-status {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 4px;
+            background-color: #fff8e6;
+            color: #ff9800;
+            margin-left: 5px;
+        }
+
+        .join-disabled {
+            color: #999;
+            cursor: not-allowed;
+        }
+
+            .join-disabled .weui-cell__ft {
+                display: none;
+            }
+    </style>
+</head>
+
+<body>
+    <div class="user-info">
+        <img src="@(Model.User.Avatar != null
+            ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.User.Avatar)}"
+            : $"https://picsum.photos/60/60?random={Model.User.Id}")"
+             alt="@Model.User.Nickname 的头像" class="user-avatar">
+        <div>
+            <div class="user-nickname">你好，@Model.User.Nickname！</div>
+            @* <div class="user-stats"> *@
+            @*     累计牌局: @Model.User.TotalGames 局 | 总战绩: ¥@Model.User.TotalNetResult *@
+            @* </div> *@
+        </div>
+    </div>
+
+    <div class="menu-grid">
+        <a href="@Url.Action("Create", "Game")" class="menu-item">
+            <div class="menu-icon"><i class="fa fa-plus-circle"></i></div>
+            <div class="menu-text">创建牌局</div>
+        </a>
+        <a href="#" class="menu-item" id="joinGame">
+            <div class="menu-icon"><i class="fa fa-users"></i></div>
+            <div class="menu-text">加入牌局</div>
+        </a>
+        <a href="@Url.Action("History", "Home")" class="menu-item">
+            <div class="menu-icon"><i class="fa fa-history"></i></div>
+            <div class="menu-text">历史记录</div>
+        </a>
+        <a href="@Url.Action("Rankings", "Home")" class="menu-item">
+            <div class="menu-icon"><i class="fa fa-trophy"></i></div>
+            <div class="menu-text">排行榜单</div>
+        </a>
+    </div>
+
+    <div class="weui-tabbar">
+        <a href="#" class="weui-tabbar__item weui-bar__item_on">
+            <i class="weui-tabbar__icon fa fa-home"></i>
+            <p class="weui-tabbar__label">首页</p>
+        </a>
+        <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-history"></i>
+            <p class="weui-tabbar__label">历史</p>
+        </a>
+        <a href="@Url.Action("Rankings", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-trophy"></i>
+            <p class="weui-tabbar__label">榜单</p>
+        </a>
+        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-sign-out"></i>
+            <p class="weui-tabbar__label">退出</p>
+        </a>
+    </div>
+
+    <script>
+        // 加入牌局功能
+        document.getElementById('joinGame').addEventListener('click', function (e) {
+            e.preventDefault();
+            showOngoingGamesModal();
+        });
+
+        // 显示进行中的牌局模态框
+        function showOngoingGamesModal() {
+            // 创建底部弹窗容器
+            const modal = document.createElement('div');
+            modal.className = 'weui-actionsheet-container';
+            modal.innerHTML = `
+                <!-- 遮罩层 -->
+                <div class="weui-mask" id="gameMask"></div>
+
+                <!-- 底部弹窗内容 -->
+                <div class="weui-actionsheet">
+                    <div class="weui-actionsheet__header">
+                        <h3 class="weui-actionsheet__title">选择进行中的牌局</h3>
+                    </div>
+
+                    <!-- 可滚动的选项列表 -->
+                    <div class="weui-actionsheet__body" id="gamesScrollContainer">
+                        <div id="ongoingGamesList" style="padding: 20px; text-align: center; color: #888;">
+                            <i class="fa fa-spinner fa-spin"></i> 加载中...
+                        </div>
+                    </div>
+
+                    <!-- 底部操作按钮 -->
+                    <div class="weui-actionsheet__footer">
+                        <button class="weui-btn weui-btn_default weui-actionsheet__btn" id="closeGameModal">取消</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // 显示动画
+            setTimeout(() => {
+                modal.querySelector('.weui-mask').classList.add('weui-mask--visible');
+                modal.querySelector('.weui-actionsheet').classList.add('weui-actionsheet--visible');
+            }, 10);
+
+            // 关闭弹窗函数
+            function closeModal() {
+                modal.querySelector('.weui-mask').classList.remove('weui-mask--visible');
+                modal.querySelector('.weui-actionsheet').classList.remove('weui-actionsheet--visible');
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                }, 300);
+            }
+
+            // 绑定关闭事件
+            modal.querySelector('#gameMask').addEventListener('click', closeModal);
+            modal.querySelector('#closeGameModal').addEventListener('click', closeModal);
+
+            // 请求进行中的牌局数据
+            fetch('@Url.Action("OngoingGames", "Home")')
+                .then(response => {
+                    if (!response.ok) throw new Error('加载失败');
+                    return response.json();
+                })
+                .then(games => {
+                    const listContainer = document.getElementById('ongoingGamesList');
+
+                    if (!games || games.length === 0) {
+                        listContainer.innerHTML = `
+                            <div style="padding: 40px 20px; text-align: center; color: #888;">
+                                <i class="fa fa-calendar-o" style="font-size: 48px; margin-bottom: 15px;"></i>
+                                <p>暂无进行中的牌局</p>
+                                <p style="font-size: 14px; margin-top: 5px;">请创建新的牌局开始游戏</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // 生成牌局列表
+                    let html = '<ul class="weui-cells weui-cells_after-title">';
+                    games.forEach(game => {
+                        // 格式化日期时间
+                        const formattedTime = new Date(game.created_at).toLocaleString();
+                        const joinClass = game.can_join ? '' : 'join-disabled';
+                        const joinTip = game.can_join ? '' : '<span class="game-status">已加入</span>';
+
+                        html += `
+                            <li class="weui-cell weui-cell_access game-item ${joinClass}"
+                                data-game-id="${game.id}"
+                                ${game.can_join ? '' : 'title="你已加入该牌局"'}>
+                                <div class="weui-cell__bd">
+                                    <div style="font-weight: 500;">
+                                        牌局 #${game.id} ${joinTip}
+                                    </div>
+                                    <div style="font-size: 13px; color: #666; margin-top: 4px;">
+                                        创建者: ${game.creator_name} | 参与: ${game.player_count}人
+                                    </div>
+                                    <div style="font-size: 12px; color: #999; margin-top: 2px;">
+                                        创建时间: ${formattedTime}
+                                    </div>
+                                </div>
+                                <div class="weui-cell__ft weui-cell__ft_in-access"></div>
+                            </li>
+                        `;
+                    });
+                    html += '</ul>';
+
+                    listContainer.innerHTML = html;
+
+                    // 绑定牌局项点击事件
+                    document.querySelectorAll('.game-item').forEach(item => {
+                        item.addEventListener('click', function () {
+                            const gameId = this.getAttribute('data-game-id');
+                            console.log(gameId);
+                            window.location.href = '@Url.Action("Join", "Game")?gameId=' + gameId;
+                            closeModal();
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('获取牌局失败:', error);
+                    document.getElementById('ongoingGamesList').innerHTML = `
+                        <div style="padding: 40px 20px; text-align: center; color: #e64340;">
+                            <i class="fa fa-exclamation-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                            <p>数据加载失败</p>
+                            <button class="weui-btn weui-btn_mini weui-btn_default" onclick="showOngoingGamesModal()">
+                                重试
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+    </script>
+</body>
+
+</html>

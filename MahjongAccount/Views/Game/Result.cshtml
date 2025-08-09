@@ -1,0 +1,276 @@
+﻿@model MahjongAccount.Models.ViewModels.ResultViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>牌局结果 - 麻将记账</title>
+    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <style>
+        .page-title {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-summary {
+            padding: 20px 15px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+
+        .result-amount {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .win {
+            color: #E64340;
+        }
+
+        .lose {
+            color: #1AAD19;
+        }
+
+        .tie {
+            color: #333;
+        }
+
+        .section-title {
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            background-color: #f9f9f9;
+        }
+
+        .player-result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .player-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .player-stats {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .player-amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .settlement-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .settlement-arrow {
+            margin: 0 10px;
+            color: #999;
+        }
+
+        .settlement-item:last-child,
+        .player-result-item:last-child {
+            margin-bottom: 20px;
+        }
+
+        .btn-area {
+            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            z-index: 10;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 按钮容器 */
+        .btn-container {
+            display: flex;
+            gap: 15px; /* 按钮之间的间距 */
+        }
+
+        /* 调整按钮宽度和样式 */
+        .btn-area .weui-btn {
+            flex: 1; /* 两个按钮平均分配宽度 */
+            margin-bottom: 0;
+            padding: 10px 0; /* 减小按钮内边距 */
+            font-size: 15px; /* 适当减小字体 */
+            width: auto; /* 取消固定宽度 */
+        }
+
+        /* 内容容器底部内边距可适当减小 */
+        .content-container {
+            padding-bottom: 80px; /* 调整为适合新按钮高度的值 */
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+
+        .weui-btn {
+            margin: 0 !important;
+        }
+
+        .game-info {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+
+        .weui-btn_default {
+            background-color: #EAEBEC;
+            color: #06ae56 !important;
+        }
+
+            .weui-btn_default:active {
+                background-color: #e6e6e6;
+            }
+
+        /* 添加内容容器样式，确保内容不会被底部按钮遮挡 */
+        .content-container {
+            padding-bottom: 160px; /* 增加到160px确保足够空间 */
+            box-sizing: border-box;
+            min-height: 100vh; /* 确保容器至少占满屏幕高度 */
+        }
+    </style>
+</head>
+<body>
+    @if (Model.Game != null)
+    {
+        <div class="page-title">牌局结果 #@Model.Game.Id</div>
+
+        <!-- 添加内容容器，解决底部遮挡问题 -->
+        <div class="content-container">
+            <div class="game-info">
+                开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")<br>
+                结束时间: @Model.Game.EndedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+            </div>
+
+            @if (Model.CurrentUserResult != null)
+            {
+                <div class="result-summary">
+                    <div>你的最终结果</div>
+                    <div class="result-amount @(Model.CurrentUserResult.NetResult > 0 ? "win" : Model.CurrentUserResult.NetResult < 0 ? "lose" : "tie")">
+                        @(Model.CurrentUserResult.NetResult > 0 ? "+" : "")¥@Math.Abs(Model.CurrentUserResult.NetResult)
+                    </div>
+                    <div>
+                        赢: ¥@Model.CurrentUserResult.TotalWin |
+                        输: ¥@Model.CurrentUserResult.TotalLose
+                    </div>
+                </div>
+            }
+
+            <div class="section-title">所有玩家结果</div>
+            @foreach (var result in Model.Results)
+            {
+                <div class="player-result-item">
+                    <img src="@(result.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(result.Avatar)}" :
+                              $"https://picsum.photos/50/50?random={result.UserId}")"
+                         alt="@result.Nickname 的头像" class="player-avatar">
+
+                    <div class="player-info">
+                        <div class="player-name">@result.Nickname</div>
+                        <div class="player-stats">
+                            赢: ¥@result.TotalWin | 输: ¥@result.TotalLose
+                        </div>
+                    </div>
+
+                    <div class="player-amount @(result.NetResult > 0 ? "win" : result.NetResult < 0 ? "lose" : "tie")">
+                        @(result.NetResult > 0 ? "+" : "")¥@Math.Abs(result.NetResult)
+                    </div>
+                </div>
+            }
+
+            <div class="section-title" style="margin-top: 15px;">结算转账记录</div>
+            @if (Model.Settlements.Any())
+            {
+                foreach (var st in Model.Settlements)
+                {
+                    <div class="settlement-item">
+                        <div style="display: flex; align-items: center;">
+                            <img src="@(st.FromAvatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(st.FromAvatar)}" :
+                                  $"https://picsum.photos/40/40?random={st.FromUserId}")"
+                                 alt="@st.FromNickname 的头像" style="width: 40px; height: 40px; border-radius: 50%;">
+                            <span style="margin-left: 5px;">@st.FromNickname</span>
+                        </div>
+
+                        <div class="settlement-arrow">
+                            <i class="fa fa-arrow-right"></i>
+                        </div>
+
+                        <div style="display: flex; align-items: center;">
+                            <img src="@(st.ToAvatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(st.ToAvatar)}" :
+                                  $"https://picsum.photos/40/40?random={st.ToUserId}")"
+                                 alt="@st.ToNickname 的头像" style="width: 40px; height: 40px; border-radius: 50%;">
+                            <span style="margin-left: 5px;">@st.ToNickname</span>
+                        </div>
+
+                        <div style="font-weight: bold; color: #E64340; margin-left: auto;">
+                            ¥@st.Amount
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    无需转账结算
+                </div>
+            }
+        </div> <!-- 内容容器结束 -->
+
+        <div class="btn-area">
+            <div class="btn-container">
+                <a asp-action="Room" asp-route-gameId="@Model.Game.Id" asp-route-view_flow="true" class="weui-btn weui-btn_default">
+                    查看详细流水
+                </a>
+                <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_primary">
+                    返回首页
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="page-title">牌局信息不存在</div>
+        <div style="text-align: center; padding: 30px; padding-bottom: 120px;">
+            <!-- 同样添加底部内边距 -->
+            <p>无法找到指定的牌局结果</p>
+            <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
+                返回首页
+            </a>
+        </div>
+    }
+</body>
+</html>

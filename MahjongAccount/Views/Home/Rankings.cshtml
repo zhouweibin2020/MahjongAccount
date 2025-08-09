@@ -1,0 +1,414 @@
+﻿@model MahjongAccount.Models.ViewModels.RankingsViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>排行榜单 - 麻将记账</title>
+    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <style>
+        .page-title {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+        }
+
+        .rank-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
+        }
+
+        .rank-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 16px;
+            position: relative;
+            text-decoration: none;
+            color: inherit;
+        }
+
+            .rank-tab.active {
+                color: #1AAD19;
+            }
+
+                .rank-tab.active::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -1px;
+                    left: 0;
+                    width: 100%;
+                    height: 2px;
+                    background-color: #1AAD19;
+                }
+
+        .rank-content {
+            padding-bottom: 60px;
+        }
+
+        .rank-list {
+            background-color: #fff;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .current-user {
+            background-color: #C8DCFA;
+        }
+
+        .rank-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #eee;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+            .rank-number.top1 {
+                background-color: #FFD700;
+                color: #fff;
+            }
+
+            .rank-number.top2 {
+                background-color: #C0C0C0;
+                color: #fff;
+            }
+
+            .rank-number.top3 {
+                background-color: #CD7F32;
+                color: #fff;
+            }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            font-size: 16px;
+        }
+
+        .rank-value {
+            font-weight: bold;
+        }
+
+        .value-win {
+            color: #E64340;
+        }
+
+        .value-lose {
+            color: #1AAD19;
+        }
+
+        .extreme-tabs {
+            display: flex;
+            margin: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .extreme-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            background-color: #EAEBEC;
+            color: #06ae56 !important;
+        }
+
+            .extreme-tab.active {
+                background-color: #07C160 !important;
+                color: #fff !important;
+            }
+
+        .rank-section {
+            margin-bottom: 15px;
+        }
+
+        .rank-section-title {
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: #f5f5f5;
+        }
+
+        .weui-tabbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .rank-section-title {
+            background-color: #f0f0f0 !important;
+            color: #333 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-title">排行榜单</div>
+
+    <!-- 主要榜单类型切换 -->
+    <div class="rank-tabs">
+        <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = "amount" })"
+           class="rank-tab @(Model.RankType == "amount" ? "active" : "")">
+            金额榜
+        </a>
+        <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = "times" })"
+           class="rank-tab @(Model.RankType == "times" ? "active" : "")">
+            次数榜
+        </a>
+    </div>
+
+    <!-- 时间范围切换 -->
+    <div class="rank-tabs">
+        <a href="@Url.Action("Rankings", "Home", new { period = "total", type = Model.RankType })"
+           class="rank-tab @(@Model.Period == "total" ? "active" : "")">
+            总榜
+        </a>
+        <a href="@Url.Action("Rankings", "Home", new { period = "year", type = Model.RankType })"
+           class="rank-tab @(@Model.Period == "year" ? "active" : "")">
+            年榜
+        </a>
+        <a href="@Url.Action("Rankings", "Home", new { period = "month", type = Model.RankType })"
+           class="rank-tab @(@Model.Period == "month" ? "active" : "")">
+            月榜
+        </a>
+    </div>
+
+    <div class="rank-content">
+        <div class="rank-section">
+            <div class="rank-section-title">
+                @if (Model.RankType == "amount")
+                {
+                    if (Model.Period == "total")
+                    {
+                        <span>总金额排行</span>
+                    }
+                    else if (Model.Period == "year")
+                    {
+                        <span>年度金额排行</span>
+                    }
+                    else
+                    {
+                        <span>月度金额排行</span>
+                    }
+                }
+                else
+                {
+                    if (Model.Period == "total")
+                    {
+                        <span>总参与次数排行</span>
+                    }
+                    else if (Model.Period == "year")
+                    {
+                        <span>年度参与次数排行</span>
+                    }
+                    else
+                    {
+                        <span>月度参与次数排行</span>
+                    }
+                }
+            </div>
+            <div class="rank-list">
+                @if (Model.Rankings.Any())
+                {
+                    for (int i = 0; i < Model.Rankings.Count; i++)
+                    {
+                        var user = Model.Rankings[i];
+                        var rank = i + 1;
+                        <div class="rank-item @(user.IsCurrentUser ? "current-user" : "")">
+                            <div class="rank-number
+                                @(rank == 1 ? "top1" :
+                                  rank == 2 ? "top2" :
+                                  rank == 3 ? "top3" : "")">
+                                @rank
+                            </div>
+                            <div class="user-info">
+                                <img src="@(user.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(user.Avatar)}" :
+                                          $"https://picsum.photos/40/40?random={user.UserId}")"
+                                     alt="@user.Nickname 的头像" class="user-avatar">
+                                <div class="user-name">@user.Nickname</div>
+                            </div>
+                            <div class="rank-value @(user.TotalPoints > 0 ? "value-win" : user.TotalPoints < 0 ? "value-lose" : "")">
+                                @if (Model.RankType == "amount")
+                                {
+                                    @($"¥{user.TotalPoints:F2}")
+                                }
+                                else
+                                {
+                                    @($"{user.GameCount} 局")
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="weui-msg" style="padding: 30px 15px;">
+                        <div class="weui-msg__text-area">
+                            <p class="weui-msg__desc">暂无数据</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- 单日/单月极值榜 -->
+        <div class="extreme-tabs">
+            <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = Model.RankType, extreme = "day" })"
+               class="extreme-tab @(Model.ExtremeType == "day" ? "active" : "")">
+                单日极值
+            </a>
+            <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = Model.RankType, extreme = "month" })"
+               class="extreme-tab @(Model.ExtremeType == "month" ? "active" : "")">
+                单月极值
+            </a>
+        </div>
+
+        <div class="rank-section">
+            <div class="rank-section-title">
+                @(Model.ExtremeType == "day" ? "单日赢最多" : "单月赢最多")
+            </div>
+            <div class="rank-list">
+                @if (Model.TopExtremes.Any())
+                {
+                    for (int i = 0; i < Model.TopExtremes.Count; i++)
+                    {
+                        var item = Model.TopExtremes[i];
+                        var rank = i + 1;
+                        <div class="rank-item @(item.IsCurrentUser ? "current-user" : "")">
+                            <div class="rank-number 
+                                @(rank == 1 ? "top1" : 
+                                  rank == 2 ? "top2" : 
+                                  rank == 3 ? "top3" : "")">
+                                @rank
+                            </div>
+                            <div class="user-info">
+                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" : 
+                                          $"https://picsum.photos/40/40?random={item.UserId}")"
+                                     alt="@item.Nickname 的头像" class="user-avatar">
+                                <div>
+                                    <div class="user-name">@item.Nickname</div>
+                                    <div class="weui-cell__desc" style="font-size: 12px;">
+                                        @(Model.ExtremeType == "day" ? $"日期: {item.Period}" : $"月份: {item.Period}")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rank-value value-win">
+                                ¥@($"{item.TotalResult:F2}")
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="weui-msg" style="padding: 30px 15px;">
+                        <div class="weui-msg__text-area">
+                            <p class="weui-msg__desc">暂无数据</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="rank-section">
+            <div class="rank-section-title">
+                @(Model.ExtremeType == "day" ? "单日输最多" : "单月输最多")
+            </div>
+            <div class="rank-list">
+                @if (Model.BottomExtremes.Any())
+                {
+                    for (int i = 0; i < Model.BottomExtremes.Count; i++)
+                    {
+                        var item = Model.BottomExtremes[i];
+                        var rank = i + 1;
+                        <div class="rank-item @(item.IsCurrentUser ? "current-user" : "")">
+                            <div class="rank-number 
+                                @(rank == 1 ? "top1" : 
+                                  rank == 2 ? "top2" : 
+                                  rank == 3 ? "top3" : "")">
+                                @rank
+                            </div>
+                            <div class="user-info">
+                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" : 
+                                          $"https://picsum.photos/40/40?random={item.UserId}")"
+                                     alt="@item.Nickname 的头像" class="user-avatar">
+                                <div>
+                                    <div class="user-name">@item.Nickname</div>
+                                    <div class="weui-cell__desc" style="font-size: 12px;">
+                                        @(Model.ExtremeType == "day" ? $"日期: {item.Period}" : $"月份: {item.Period}")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rank-value value-lose">
+                                ¥@($"{item.TotalResult:F2}")
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="weui-msg" style="padding: 30px 15px;">
+                        <div class="weui-msg__text-area">
+                            <p class="weui-msg__desc">暂无数据</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 底部导航 -->
+    <div class="weui-tabbar">
+        <a href="@Url.Action("Index", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-home"></i>
+            <p class="weui-tabbar__label">首页</p>
+        </a>
+        <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-history"></i>
+            <p class="weui-tabbar__label">历史</p>
+        </a>
+        <a href="#" class="weui-tabbar__item weui-bar__item_on">
+            <i class="weui-tabbar__icon fa fa-trophy"></i>
+            <p class="weui-tabbar__label">榜单</p>
+        </a>
+        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-sign-out"></i>
+            <p class="weui-tabbar__label">退出</p>
+        </a>
+    </div>
+</body>
+
+</html>

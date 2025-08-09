@@ -1,0 +1,99 @@
+﻿@{
+    Layout = null;
+}
+@model MahjongAccount.Models.Game
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>创建牌局 - 麻将记账</title>
+    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <style>
+        .page-title {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-container {
+            padding: 15px;
+        }
+
+        .weui-cells {
+            margin-top: 0;
+        }
+
+        .btn-area {
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .weui-btn {
+            margin-bottom: 10px;
+        }
+
+        .weui-tabbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        body {
+            padding-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-title">创建新牌局</div>
+
+    <div class="form-container">
+        @using (Html.BeginForm("Create", "Game", FormMethod.Post, new { @class = "weui-form" }))
+        {
+            <div class="weui-cells weui-cells_form">
+                <div class="weui-cell">
+                    <div class="weui-cell__hd"><label class="weui-label">牌局名称</label></div>
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" type="text" name="name" placeholder="请输入牌局名称（可选）">
+                    </div>
+                </div>
+
+                <div class="weui-cell">
+                    <div class="weui-cell__hd"><label class="weui-label">备注信息</label></div>
+                    <div class="weui-cell__bd">
+                        <textarea class="weui-textarea" name="remarks" rows="3" placeholder="请输入备注（可选）"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-area">
+                <button type="submit" class="weui-btn weui-btn_primary">创建牌局</button>
+                <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_default">返回首页</a>
+            </div>
+        }
+    </div>
+
+    <div class="weui-tabbar">
+        <a href="@Url.Action("Index", "Home")" class="weui-tabbar__item weui-bar__item_on">
+            <i class="weui-tabbar__icon fa fa-home"></i>
+            <p class="weui-tabbar__label">首页</p>
+        </a>
+        <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-history"></i>
+            <p class="weui-tabbar__label">历史</p>
+        </a>
+        <a href="@Url.Action("Rankings", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-trophy"></i>
+            <p class="weui-tabbar__label">榜单</p>
+        </a>
+        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+            <i class="weui-tabbar__icon fa fa-sign-out"></i>
+            <p class="weui-tabbar__label">退出</p>
+        </a>
+    </div>
+</body>
+</html>
