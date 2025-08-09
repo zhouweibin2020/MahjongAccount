@@ -54,6 +54,13 @@ namespace MahjongAccount.Controllers
                 ModelState.AddModelError("Nickname", "昵称不能为空");
                 return View();
             }
+            // 检查昵称是否已存在
+            var nicknameExists = await _context.Users.AnyAsync(u => u.Nickname == nickname);
+            if (nicknameExists)
+            {
+                ModelState.AddModelError("Nickname", "该昵称已被使用，请选择其他昵称");
+                return View();
+            }
 
             var user = new User
             {
