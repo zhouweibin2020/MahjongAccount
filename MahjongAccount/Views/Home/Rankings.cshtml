@@ -10,8 +10,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>排行榜单 - 麻将记账</title>
-    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
     <style>
         .page-title {
             text-align: center;
@@ -19,6 +22,7 @@
             font-size: 18px;
             font-weight: bold;
             border-bottom: 1px solid #eee;
+            background-color: #fff;
         }
 
         .rank-tabs {
@@ -35,6 +39,7 @@
             position: relative;
             text-decoration: none;
             color: inherit;
+            transition: all 0.2s;
         }
 
             .rank-tab.active {
@@ -51,12 +56,21 @@
                     background-color: #1AAD19;
                 }
 
+            .rank-tab:active {
+                background-color: #f5f5f5;
+            }
+
         .rank-content {
             padding-bottom: 60px;
+            background-color: #f5f5f5;
         }
 
         .rank-list {
             background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 0 15px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .rank-item {
@@ -64,7 +78,12 @@
             align-items: center;
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
         }
+
+            .rank-item:active {
+                background-color: #f5f5f5;
+            }
 
         .current-user {
             background-color: #C8DCFA;
@@ -109,6 +128,7 @@
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
+            object-fit: cover;
         }
 
         .user-name {
@@ -129,10 +149,11 @@
 
         .extreme-tabs {
             display: flex;
-            margin: 10px;
+            margin: 10px 15px;
             background-color: #fff;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .extreme-tab {
@@ -144,11 +165,16 @@
             text-decoration: none;
             background-color: #EAEBEC;
             color: #06ae56 !important;
+            transition: all 0.2s;
         }
 
             .extreme-tab.active {
                 background-color: #07C160 !important;
                 color: #fff !important;
+            }
+
+            .extreme-tab:active:not(.active) {
+                background-color: #e0e0e0;
             }
 
         .rank-section {
@@ -160,6 +186,8 @@
             font-size: 16px;
             font-weight: 500;
             background-color: #f5f5f5;
+            margin: 0 15px 10px;
+            border-radius: 8px 8px 0 0;
         }
 
         .weui-tabbar {
@@ -168,9 +196,19 @@
             width: 100%;
         }
 
-        .rank-section-title {
-            background-color: #f0f0f0 !important;
-            color: #333 !important;
+        .empty-state {
+            text-align: center;
+            padding: 40px 15px;
+            color: #888;
+            background-color: #fff;
+            border-radius: 8px;
+            margin: 0 15px;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
         }
     </style>
 </head>
@@ -275,10 +313,9 @@
                 }
                 else
                 {
-                    <div class="weui-msg" style="padding: 30px 15px;">
-                        <div class="weui-msg__text-area">
-                            <p class="weui-msg__desc">暂无数据</p>
-                        </div>
+                    <div class="empty-state">
+                        <i class="fa fa-trophy empty-icon"></i>
+                        <p>暂无数据</p>
                     </div>
                 }
             </div>
@@ -308,14 +345,14 @@
                         var item = Model.TopExtremes[i];
                         var rank = i + 1;
                         <div class="rank-item @(item.IsCurrentUser ? "current-user" : "")">
-                            <div class="rank-number 
-                                @(rank == 1 ? "top1" : 
-                                  rank == 2 ? "top2" : 
+                            <div class="rank-number
+                                @(rank == 1 ? "top1" :
+                                  rank == 2 ? "top2" :
                                   rank == 3 ? "top3" : "")">
                                 @rank
                             </div>
                             <div class="user-info">
-                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" : 
+                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" :
                                           $"https://picsum.photos/40/40?random={item.UserId}")"
                                      alt="@item.Nickname 的头像" class="user-avatar">
                                 <div>
@@ -333,10 +370,9 @@
                 }
                 else
                 {
-                    <div class="weui-msg" style="padding: 30px 15px;">
-                        <div class="weui-msg__text-area">
-                            <p class="weui-msg__desc">暂无数据</p>
-                        </div>
+                    <div class="empty-state">
+                        <i class="fa fa-trophy empty-icon"></i>
+                        <p>暂无数据</p>
                     </div>
                 }
             </div>
@@ -354,14 +390,14 @@
                         var item = Model.BottomExtremes[i];
                         var rank = i + 1;
                         <div class="rank-item @(item.IsCurrentUser ? "current-user" : "")">
-                            <div class="rank-number 
-                                @(rank == 1 ? "top1" : 
-                                  rank == 2 ? "top2" : 
+                            <div class="rank-number
+                                @(rank == 1 ? "top1" :
+                                  rank == 2 ? "top2" :
                                   rank == 3 ? "top3" : "")">
                                 @rank
                             </div>
                             <div class="user-info">
-                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" : 
+                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" :
                                           $"https://picsum.photos/40/40?random={item.UserId}")"
                                      alt="@item.Nickname 的头像" class="user-avatar">
                                 <div>
@@ -379,10 +415,9 @@
                 }
                 else
                 {
-                    <div class="weui-msg" style="padding: 30px 15px;">
-                        <div class="weui-msg__text-area">
-                            <p class="weui-msg__desc">暂无数据</p>
-                        </div>
+                    <div class="empty-state">
+                        <i class="fa fa-trophy empty-icon"></i>
+                        <p>暂无数据</p>
                     </div>
                 }
             </div>
@@ -404,11 +439,53 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+        <a class="weui-tabbar__item" id="logoutBtn">
             <i class="weui-tabbar__icon fa fa-sign-out"></i>
             <p class="weui-tabbar__label">退出</p>
         </a>
     </div>
-</body>
+    <script>
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+            // 为所有标签添加点击加载状态
+            $('.rank-tab, .extreme-tab').on('click', function(e) {
+                // 如果点击的是当前激活的标签，不做处理
+                if ($(this).hasClass('active')) {
+                    e.preventDefault();
+                    return;
+                }
 
+                const $link = $(this);
+                const href = $link.attr('href');
+
+                // 显示加载提示
+                $.showLoading('加载中...');
+
+                // 延迟跳转，确保加载提示显示
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+
+                return false;
+            });
+
+            // 退出按钮确认提示
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+
+                $.confirm({
+                    title: '确认退出',
+                    text: '确定要退出当前账号吗？',
+                    onOK: function() {
+                        // 显示加载提示
+                        $.showLoading('退出中...');
+                        setTimeout(() => {
+                            window.location.href = "@Url.Action("Logout", "Home")";
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
 </html>

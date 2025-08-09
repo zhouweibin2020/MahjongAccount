@@ -9,17 +9,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>创建用户 - 麻将记账</title>
-    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
     <style>
         .page-title {
             text-align: center;
             padding: 20px 0;
             font-size: 20px;
             font-weight: bold;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
         }
 
         .form-container {
+            padding: 15px;
+            background-color: #f5f5f5;
+        }
+
+        .form-wrapper {
+            background-color: #fff;
+            border-radius: 8px;
             padding: 15px;
         }
 
@@ -48,6 +61,7 @@
 
         .btn-area {
             margin-top: 30px;
+            padding: 0 15px;
         }
 
         .validation-message {
@@ -84,76 +98,82 @@
             clip: rect(0, 0, 0, 0);
             border: 0;
         }
+
+        .weui-cells {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
     <div class="page-title">创建新用户</div>
 
     <div class="form-container">
-        <form asp-action="Create" enctype="multipart/form-data" onsubmit="return validateForm()">
-            <div class="avatar-hint">请上传头像（必填）</div>
+        <div class="form-wrapper">
+            <form asp-action="Create" enctype="multipart/form-data" onsubmit="return validateForm()">
+                <div class="avatar-hint">请上传头像（必填）</div>
 
-            <div class="avatar-preview-container @(ViewData.ModelState.ContainsKey("Avatar") ? "avatar-required" : "")">
-                <div class="avatar-preview">
-                    <img id="preview" src="" alt="预览头像" style="display: none;">
-                    <i class="fa fa-user" style="font-size: 40px; color: #999;"></i>
-                </div>
-
-                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("Avatar"))
-                {
-                    <div class="validation-message">
-                        @ViewData.ModelState["Avatar"].Errors.First().ErrorMessage
+                <div class="avatar-preview-container @(ViewData.ModelState.ContainsKey("Avatar") ? "avatar-required" : "")">
+                    <div class="avatar-preview">
+                        <img id="preview" src="" alt="预览头像" style="display: none;">
+                        <i class="fa fa-user" style="font-size: 40px; color: #999;"></i>
                     </div>
-                }
-            </div>
 
-            <div class="weui-cell weui-cell_access weui-cell_select">
-                <div class="weui-cell__bd">选择头像</div>
-                <div class="weui-cell__ft">
-                    <input type="file" id="avatar" name="avatar" accept="image/*"
-                           class="visually-hidden" required>
-                    <label for="avatar" class="weui-uploader__input-box">
-                        <i class="fa fa-upload"></i>
-                    </label>
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("Avatar"))
+                    {
+                        <div class="validation-message">
+                            @ViewData.ModelState["Avatar"].Errors.First().ErrorMessage
+                        </div>
+                    }
                 </div>
-            </div>
 
-            <div class="weui-cells weui-cells_form">
-                <div class="weui-cell">
-                    <div class="weui-cell__hd"><label class="weui-label">昵称</label></div>
-                    <div class="weui-cell__bd">
-                        <input class="weui-input" type="text" name="nickname" placeholder="请输入昵称" required>
-                        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("Nickname"))
-                        {
-                            <div class="validation-message">
-                                @ViewData.ModelState["Nickname"].Errors.First().ErrorMessage
-                            </div>
-                        }
+                <div class="weui-cell weui-cell_access weui-cell_select">
+                    <div class="weui-cell__bd">选择头像</div>
+                    <div class="weui-cell__ft">
+                        <input type="file" id="avatar" name="avatar" accept="image/*"
+                               class="visually-hidden" required>
+                        <label for="avatar" class="weui-uploader__input-box">
+                            <i class="fa fa-upload"></i>
+                        </label>
                     </div>
                 </div>
-            </div>
 
-            <div class="btn-area">
-                <button type="submit" class="weui-btn weui-btn_primary">创建用户</button>
-                <a asp-action="UserSelect" class="weui-btn weui-btn_default" style="margin-top: 10px;">返回</a>
-            </div>
-        </form>
+                <div class="weui-cells weui-cells_form">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label class="weui-label">昵称</label></div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" type="text" name="nickname" placeholder="请输入昵称" required>
+                            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey("Nickname"))
+                            {
+                                <div class="validation-message">
+                                    @ViewData.ModelState["Nickname"].Errors.First().ErrorMessage
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-area">
+                    <button type="submit" class="weui-btn weui-btn_primary">创建用户</button>
+                    <a asp-action="UserSelect" class="weui-btn weui-btn_default" style="margin-top: 10px;">返回</a>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
         // 头像预览功能
-        document.getElementById('avatar').addEventListener('change', function (e) {
+        $('#avatar').on('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 // 移除必填提示样式
-                document.querySelector('.avatar-preview-container').classList.remove('avatar-required');
+                $('.avatar-preview-container').removeClass('avatar-required');
 
                 const reader = new FileReader();
                 reader.onload = function (event) {
-                    const preview = document.getElementById('preview');
-                    preview.src = event.target.result;
-                    preview.style.display = 'block';
-                    preview.parentNode.querySelector('i').style.display = 'none';
+                    const preview = $('#preview');
+                    preview.attr('src', event.target.result)
+                           .show()
+                           .parent().find('i').hide();
                 }
                 reader.readAsDataURL(file);
             }
@@ -161,26 +181,36 @@
 
         // 表单验证
         function validateForm() {
-            const avatarInput = document.getElementById('avatar');
-            const avatarContainer = document.querySelector('.avatar-preview-container');
+            const avatarInput = $('#avatar')[0];
+            const avatarContainer = $('.avatar-preview-container');
 
             // 检查是否选择了头像文件
             if (!avatarInput.files || avatarInput.files.length === 0) {
                 // 添加必填提示样式
-                avatarContainer.classList.add('avatar-required');
+                avatarContainer.addClass('avatar-required');
 
                 // 显示错误消息
-                let errorElement = avatarContainer.querySelector('.validation-message');
-                if (!errorElement) {
-                    errorElement = document.createElement('div');
-                    errorElement.className = 'validation-message';
-                    avatarContainer.appendChild(errorElement);
+                let errorElement = avatarContainer.find('.validation-message');
+                if (errorElement.length === 0) {
+                    errorElement = $('<div class="validation-message"></div>');
+                    avatarContainer.append(errorElement);
                 }
-                errorElement.textContent = '请上传头像';
+                errorElement.text('请上传头像');
 
-                // 手动聚焦到标签元素，提供更好的用户体验
-                document.querySelector('label[for="avatar"]').focus();
+                // 显示jQuery WeUI提示
+                $.toast('请上传头像', 'forbidden');
+
+                // 手动聚焦到标签元素
+                $('label[for="avatar"]').focus();
                 return false; // 阻止表单提交
+            }
+
+            // 检查昵称是否为空
+            const nickname = $('input[name="nickname"]').val().trim();
+            if (!nickname) {
+                $.toast('请输入昵称', 'forbidden');
+                $('input[name="nickname"]').focus();
+                return false;
             }
 
             return true; // 允许表单提交

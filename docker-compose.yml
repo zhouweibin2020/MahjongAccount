@@ -1,0 +1,9 @@
+services:
+  mahjong-account:
+    image: zhouweibin904/mahjong-account:v3
+    container_name: mahjong-account
+    restart: always
+    ports:
+      - "8003:80"
+    volumes:
+      - ./database.db:/app/database.db  # 持久化数据库数据

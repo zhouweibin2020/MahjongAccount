@@ -3,7 +3,6 @@
 }
 @model List< MahjongAccount.Models.ViewModels.HistoryItemViewModel>
 @{
-    Layout = null;
     var currentUser = ViewData["CurrentUser"] as MahjongAccount.Models.User;
     var totalGames = (int)ViewData["TotalGames"];
     var totalNetResult = (int)ViewData["TotalNetResult"];
@@ -19,8 +18,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>历史记录 - 麻将记账</title>
-    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
     <style>
         .page-title {
             text-align: center;
@@ -28,6 +30,7 @@
             font-size: 20px;
             font-weight: bold;
             border-bottom: 1px solid #eee;
+            background-color: #fff;
         }
 
         .filter-bar {
@@ -100,6 +103,7 @@
 
         .history-list {
             padding-bottom: 60px;
+            background-color: #f5f5f5;
         }
 
         .history-item {
@@ -108,7 +112,12 @@
             background-color: #fff;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.2s;
         }
+
+            .history-item:active {
+                background-color: #f5f5f5;
+            }
 
         .history-header {
             display: flex;
@@ -142,12 +151,31 @@
             color: #07c160;
             font-size: 14px;
             text-decoration: none;
+            margin-top: 10px;
+            align-self: flex-end;
+            display: inline-flex;
+            align-items: center;
         }
+
+            .detail-btn i {
+                margin-left: 3px;
+                transition: transform 0.2s;
+            }
+
+            .detail-btn:active i {
+                transform: translateX(2px);
+            }
 
         .empty-state {
             text-align: center;
             padding: 50px 15px;
             color: #999;
+            background-color: #f5f5f5;
+            min-height: calc(100vh - 220px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .empty-icon {
@@ -187,7 +215,7 @@
     <div class="page-title">历史记录</div>
 
     <div class="filter-bar">
-        <form class="filter-form" asp-action="History" method="get">
+        <form class="filter-form" asp-action="History" method="get" id="filterForm">
             <input type="date" name="startDate" class="date-input" value="@startDate" placeholder="开始日期">
             <input type="date" name="endDate" class="date-input" value="@endDate" placeholder="结束日期">
             <button type="submit" class="filter-btn">筛选</button>
@@ -239,7 +267,7 @@
                             @(item.UserNetResult > 0 ? "+" : "")¥@Math.Abs(item.UserNetResult)
                         </div>
                     </div>
-                    <a asp-action="Result" asp-controller="Game" asp-route-gameId="@item.GameId" class="detail-btn">
+                    <a asp-action="Result" asp-controller="Game" asp-route-gameId="@item.GameId" class="detail-btn" id="detailBtn_@item.GameId">
                         查看详情 <i class="fa fa-angle-right"></i>
                     </a>
                 </div>
@@ -255,7 +283,7 @@
                 <div style="margin-top: 10px; font-size: 14px;">
                     开始你的第一局麻将吧
                 </div>
-                <a asp-action="Create" asp-controller="Game" class="weui-btn weui-btn_primary" style="margin-top: 20px; width: 120px;">
+                <a asp-action="Create" asp-controller="Game" class="weui-btn weui-btn_primary" style="margin-top: 20px; width: 120px;" id="createGameBtn">
                     创建牌局
                 </a>
             </div>
@@ -275,10 +303,45 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+        <a class="weui-tabbar__item" id="logoutBtn">
             <i class="weui-tabbar__icon fa fa-sign-out"></i>
             <p class="weui-tabbar__label">退出</p>
         </a>
     </div>
+    <script>
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+            // 筛选表单提交处理
+            $('#filterForm').on('submit', function(e) {
+                const startDate = $('input[name="startDate"]').val();
+                const endDate = $('input[name="endDate"]').val();
+
+                // 简单验证日期
+                if (startDate && endDate && startDate > endDate) {
+                    e.preventDefault();
+                    $.toast('开始日期不能晚于结束日期', 'forbidden');
+                    return false;
+                }
+
+                // 显示加载状态
+                const $submitBtn = $(this).find('button[type="submit"]');
+                $submitBtn.addClass('weui-btn_loading').prop('disabled', true);
+            });
+
+            // 退出按钮确认提示
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+                const $link = $(this);
+
+                $.confirm({
+                    title: '确认退出',
+                    text: '确定要退出当前账号吗？',
+                    onOK: function() {
+                        window.location.href = "@Url.Action("Logout", "Home")";
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

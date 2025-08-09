@@ -9,8 +9,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>创建牌局 - 麻将记账</title>
-    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
     <style>
         .page-title {
             text-align: center;
@@ -18,9 +21,17 @@
             font-size: 20px;
             font-weight: bold;
             border-bottom: 1px solid #eee;
+            background-color: #fff;
         }
 
         .form-container {
+            padding: 15px;
+            background-color: #f5f5f5;
+        }
+
+        .form-wrapper {
+            background-color: #fff;
+            border-radius: 8px;
             padding: 15px;
         }
 
@@ -45,6 +56,7 @@
 
         body {
             padding-bottom: 50px;
+            background-color: #f5f5f5;
         }
     </style>
 </head>
@@ -52,29 +64,31 @@
     <div class="page-title">创建新牌局</div>
 
     <div class="form-container">
-        @using (Html.BeginForm("Create", "Game", FormMethod.Post, new { @class = "weui-form" }))
-        {
-            <div class="weui-cells weui-cells_form">
-                <div class="weui-cell">
-                    <div class="weui-cell__hd"><label class="weui-label">牌局名称</label></div>
-                    <div class="weui-cell__bd">
-                        <input class="weui-input" type="text" name="name" placeholder="请输入牌局名称（可选）">
+        <div class="form-wrapper">
+            @using (Html.BeginForm("Create", "Game", FormMethod.Post, new { @class = "weui-form" }))
+            {
+                <div class="weui-cells weui-cells_form">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label class="weui-label">牌局名称</label></div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" type="text" name="name" placeholder="请输入牌局名称" required>
+                        </div>
+                    </div>
+
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label class="weui-label">备注信息</label></div>
+                        <div class="weui-cell__bd">
+                            <textarea class="weui-textarea" name="remarks" rows="3" placeholder="请输入备注（可选）"></textarea>
+                        </div>
                     </div>
                 </div>
 
-                <div class="weui-cell">
-                    <div class="weui-cell__hd"><label class="weui-label">备注信息</label></div>
-                    <div class="weui-cell__bd">
-                        <textarea class="weui-textarea" name="remarks" rows="3" placeholder="请输入备注（可选）"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="btn-area">
-                <button type="submit" class="weui-btn weui-btn_primary">创建牌局</button>
+                <div class="btn-area">
+                    <button type="submit" class="weui-btn weui-btn_primary">创建牌局</button>
                 <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_default">返回首页</a>
-            </div>
-        }
+                </div>
+            }
+        </div>
     </div>
 
     <div class="weui-tabbar">
@@ -90,10 +104,29 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+        <a class="weui-tabbar__item" id="logoutBtn">
             <i class="weui-tabbar__icon fa fa-sign-out"></i>
             <p class="weui-tabbar__label">退出</p>
         </a>
     </div>
+    <script>
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+
+            // 退出按钮确认提示
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+                const $link = $(this);
+
+                $.confirm({
+                    title: '确认退出',
+                    text: '确定要退出当前账号吗？',
+                    onOK: function() {
+                        window.location.href = "@Url.Action("Logout", "Home")";
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

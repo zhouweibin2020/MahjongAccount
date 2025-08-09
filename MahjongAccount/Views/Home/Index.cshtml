@@ -10,8 +10,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>麻将记账 - 首页</title>
-    <link href="~/css/weui.min.css" rel="stylesheet" />
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
     <style>
         .user-info {
             display: flex;
@@ -26,6 +29,7 @@
             height: 60px;
             border-radius: 50%;
             margin-right: 15px;
+            object-fit: cover;
         }
 
         .user-nickname {
@@ -54,11 +58,12 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             text-decoration: none;
             color: inherit;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
             .menu-item:active {
                 transform: scale(0.98);
+                box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
             }
 
         .menu-icon {
@@ -80,86 +85,6 @@
         body {
             padding-bottom: 50px;
             background-color: #f5f5f5;
-        }
-
-        /* 底部弹窗容器 */
-        .weui-actionsheet-container {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1001;
-            pointer-events: none;
-        }
-
-        /* 遮罩层样式 */
-        .weui-mask {
-            position: fixed;
-            z-index: 1000;
-            top: 0;
-            right: 0;
-            left: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .weui-mask--visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* 弹窗内容样式 */
-        .weui-actionsheet {
-            position: relative;
-            transform: translate(0, 100%);
-            -webkit-transform: translate(0, 100%);
-            transition: transform 0.3s;
-            -webkit-transition: -webkit-transform 0.3s;
-            background-color: #f7f7f7;
-            pointer-events: auto;
-        }
-
-        .weui-actionsheet--visible {
-            transform: translate(0, 0);
-            -webkit-transform: translate(0, 0);
-        }
-
-        /* 弹窗标题 */
-        .weui-actionsheet__header {
-            padding: 15px 15px 10px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        .weui-actionsheet__title {
-            font-size: 16px;
-            color: #000;
-            margin: 0;
-        }
-
-        /* 滚动内容区域 */
-        .weui-actionsheet__body {
-            max-height: 60vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            background-color: #fff;
-        }
-
-        /* 底部按钮区域 */
-        .weui-actionsheet__footer {
-            margin-top: 8px;
-            padding: 8px;
-            background-color: #f7f7f7;
-        }
-
-        .weui-actionsheet__btn {
-            display: block;
-            width: 100%;
-            padding: 12px 0;
-            font-size: 17px;
         }
 
         /* 牌局列表项样式 */
@@ -239,101 +164,88 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a href="@Url.Action("Logout", "Home")" class="weui-tabbar__item">
+        <a class="weui-tabbar__item" id="logoutBtn">
             <i class="weui-tabbar__icon fa fa-sign-out"></i>
             <p class="weui-tabbar__label">退出</p>
         </a>
     </div>
 
     <script>
-        // 加入牌局功能
-        document.getElementById('joinGame').addEventListener('click', function (e) {
-            e.preventDefault();
-            showOngoingGamesModal();
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+            // 加入牌局功能
+            $('#joinGame').on('click', function(e) {
+                e.preventDefault();
+                showOngoingGamesModal();
+            });
+
+            // 退出按钮确认提示
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+                const $link = $(this);
+
+                $.confirm({
+                    title: '确认退出',
+                    text: '确定要退出当前账号吗？',
+                    onOK: function() {
+                        window.location.href = "@Url.Action("Logout", "Home")";
+                    }
+                });
+            });
         });
 
         // 显示进行中的牌局模态框
         function showOngoingGamesModal() {
-            // 创建底部弹窗容器
-            const modal = document.createElement('div');
-            modal.className = 'weui-actionsheet-container';
-            modal.innerHTML = `
-                <!-- 遮罩层 -->
-                <div class="weui-mask" id="gameMask"></div>
-
-                <!-- 底部弹窗内容 -->
-                <div class="weui-actionsheet">
-                    <div class="weui-actionsheet__header">
-                        <h3 class="weui-actionsheet__title">选择进行中的牌局</h3>
-                    </div>
-
-                    <!-- 可滚动的选项列表 -->
-                    <div class="weui-actionsheet__body" id="gamesScrollContainer">
-                        <div id="ongoingGamesList" style="padding: 20px; text-align: center; color: #888;">
-                            <i class="fa fa-spinner fa-spin"></i> 加载中...
-                        </div>
-                    </div>
-
-                    <!-- 底部操作按钮 -->
-                    <div class="weui-actionsheet__footer">
-                        <button class="weui-btn weui-btn_default weui-actionsheet__btn" id="closeGameModal">取消</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            // 显示动画
-            setTimeout(() => {
-                modal.querySelector('.weui-mask').classList.add('weui-mask--visible');
-                modal.querySelector('.weui-actionsheet').classList.add('weui-actionsheet--visible');
-            }, 10);
-
-            // 关闭弹窗函数
-            function closeModal() {
-                modal.querySelector('.weui-mask').classList.remove('weui-mask--visible');
-                modal.querySelector('.weui-actionsheet').classList.remove('weui-actionsheet--visible');
-                // 动画结束后移除元素
-                setTimeout(() => {
-                    document.body.removeChild(modal);
-                }, 300);
-            }
-
-            // 绑定关闭事件
-            modal.querySelector('#gameMask').addEventListener('click', closeModal);
-            modal.querySelector('#closeGameModal').addEventListener('click', closeModal);
+            // 使用jQuery WeUI的actionsheet组件
+            $.actions({
+                title: "选择进行中的牌局",
+                onClose: function() {
+                    console.log("弹窗已关闭");
+                },
+                actions: [{
+                    // 这里只是占位，实际内容将通过AJAX加载
+                    text: '<i class="fa fa-spinner fa-spin"></i> 加载中...',
+                    className: 'loading-placeholder'
+                }]
+            });
 
             // 请求进行中的牌局数据
-            fetch('@Url.Action("OngoingGames", "Home")')
-                .then(response => {
-                    if (!response.ok) throw new Error('加载失败');
-                    return response.json();
-                })
-                .then(games => {
-                    const listContainer = document.getElementById('ongoingGamesList');
+            $.get('@Url.Action("OngoingGames", "Home")')
+                .done(function(games) {
+                    // 关闭初始的加载占位弹窗
+                    $('.weui-mask').trigger('click');
 
                     if (!games || games.length === 0) {
-                        listContainer.innerHTML = `
-                            <div style="padding: 40px 20px; text-align: center; color: #888;">
-                                <i class="fa fa-calendar-o" style="font-size: 48px; margin-bottom: 15px;"></i>
-                                <p>暂无进行中的牌局</p>
-                                <p style="font-size: 14px; margin-top: 5px;">请创建新的牌局开始游戏</p>
-                            </div>
-                        `;
+                        // 显示无牌局提示
+                        $.actions({
+                            title: "选择进行中的牌局",
+                            actions: [{
+                                text: `
+                                    <div style="padding: 40px 20px; text-align: center; color: #888;">
+                                        <i class="fa fa-calendar-o" style="font-size: 48px; margin-bottom: 15px;"></i>
+                                        <p>暂无进行中的牌局</p>
+                                        <p style="font-size: 14px; margin-top: 5px;">请创建新的牌局开始游戏</p>
+                                    </div>
+                                `,
+                                className: 'no-games',
+                                onClick: function() {
+                                    // 点击无反应
+                                    return false;
+                                }
+                            }]
+                        });
                         return;
                     }
 
-                    // 生成牌局列表
-                    let html = '<ul class="weui-cells weui-cells_after-title">';
-                    games.forEach(game => {
+                    // 构建牌局列表
+                    const actions = games.map(game => {
                         // 格式化日期时间
                         const formattedTime = new Date(game.created_at).toLocaleString();
                         const joinClass = game.can_join ? '' : 'join-disabled';
-                        const joinTip = game.can_join ? '' : '<span class="game-status">已加入</span>';
+                        const joinTip = game.can_join ? '' : `<span class="game-status">已加入</span>`;
 
-                        html += `
-                            <li class="weui-cell weui-cell_access game-item ${joinClass}"
-                                data-game-id="${game.id}"
-                                ${game.can_join ? '' : 'title="你已加入该牌局"'}>
+                        return {
+                            text: `
                                 <div class="weui-cell__bd">
                                     <div style="font-weight: 500;">
                                         牌局 #${game.id} ${joinTip}
@@ -345,35 +257,46 @@
                                         创建时间: ${formattedTime}
                                     </div>
                                 </div>
-                                <div class="weui-cell__ft weui-cell__ft_in-access"></div>
-                            </li>
-                        `;
+                            `,
+                            className: `game-item ${joinClass}`,
+                            onClick: function() {
+                                window.location.href = '@Url.Action("Join", "Game")?gameId=' + game.id;                                
+                                return false; // 阻止自动关闭，手动控制
+                            }
+                        };
                     });
-                    html += '</ul>';
 
-                    listContainer.innerHTML = html;
 
-                    // 绑定牌局项点击事件
-                    document.querySelectorAll('.game-item').forEach(item => {
-                        item.addEventListener('click', function () {
-                            const gameId = this.getAttribute('data-game-id');
-                            console.log(gameId);
-                            window.location.href = '@Url.Action("Join", "Game")?gameId=' + gameId;
-                            closeModal();
-                        });
+                    // 显示牌局列表弹窗
+                    $.actions({
+                        title: "选择进行中的牌局",
+                        actions: actions
                     });
                 })
-                .catch(error => {
+                .fail(function(error) {
                     console.error('获取牌局失败:', error);
-                    document.getElementById('ongoingGamesList').innerHTML = `
-                        <div style="padding: 40px 20px; text-align: center; color: #e64340;">
-                            <i class="fa fa-exclamation-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
-                            <p>数据加载失败</p>
-                            <button class="weui-btn weui-btn_mini weui-btn_default" onclick="showOngoingGamesModal()">
-                                重试
-                            </button>
-                        </div>
-                    `;
+                    // 关闭初始弹窗
+                    $('.weui-mask').trigger('click');
+
+                    // 显示错误提示
+                    $.actions({
+                        title: "加载失败",
+                        actions: [{
+                            text: `
+                                <div style="padding: 40px 20px; text-align: center; color: #e64340;">
+                                    <i class="fa fa-exclamation-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                                    <p>数据加载失败</p>
+                                    <button class="weui-btn weui-btn_mini weui-btn_default" onclick="showOngoingGamesModal()">
+                                        重试
+                                    </button>
+                                </div>
+                            `,
+                            className: 'error-state',
+                            onClick: function() {
+                                return false;
+                            }
+                        }]
+                    });
                 });
         }
     </script>

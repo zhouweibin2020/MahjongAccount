@@ -1,0 +1,58 @@
+# 编译输出目录
+**/bin/
+**/obj/
+
+# 测试相关
+**/TestResults/
+**/coverage/
+
+# 环境配置文件（避免覆盖容器内配置）
+**/appsettings.Development.json
+**/appsettings.Staging.json
+**/appsettings.Production.json
+**/secrets.json
+
+# 版本控制目录
+.git/
+.gitignore
+.gitattributes
+
+# IDE 配置文件
+.vs/
+.vscode/
+*.suo
+*.user
+*.sln.docstates
+*.sln.user
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 日志和临时文件
+**/logs/
+**/tmp/
+**/temp/
+
+# 包管理缓存
+.nuget/
+ paket/
+**/packages/
+
+# 数据库文件（避免将本地数据库带入容器）
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+
+# 构建输出目录
+/out/
+/dist/
+/publish/
+
+# 脚本和工具
+**/build/
+**/tools/
+
+docker-compose.yml
