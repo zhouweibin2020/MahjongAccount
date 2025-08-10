@@ -12,8 +12,6 @@
     <link href="~/lib/weui.min.css" rel="stylesheet" />
     <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
-    <script src="~/lib/jquery-2.1.4.js"></script>
-    <script src="~/js/jquery-weui.js"></script>
     <style>
         .page-title {
             text-align: center;
@@ -85,7 +83,7 @@
 
                 <div class="btn-area">
                     <button type="submit" class="weui-btn weui-btn_primary">创建牌局</button>
-                <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_default">返回首页</a>
+                    <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_default">返回首页</a>
                 </div>
             }
         </div>
@@ -104,29 +102,6 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a class="weui-tabbar__item" id="logoutBtn">
-            <i class="weui-tabbar__icon fa fa-sign-out"></i>
-            <p class="weui-tabbar__label">退出</p>
-        </a>
     </div>
-    <script>
-        // 页面加载完成后初始化
-        $(document).ready(function() {
-
-            // 退出按钮确认提示
-            $('#logoutBtn').on('click', function(e) {
-                e.preventDefault();
-                const $link = $(this);
-
-                $.confirm({
-                    title: '确认退出',
-                    text: '确定要退出当前账号吗？',
-                    onOK: function() {
-                        window.location.href = "@Url.Action("Logout", "Home")";
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>

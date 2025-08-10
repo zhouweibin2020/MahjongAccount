@@ -118,7 +118,7 @@
                 <i class="fa fa-user-o empty-icon"></i>
                 <h3 class="weui-msg__title">暂无用户</h3>
                 <p class="weui-msg__desc">请创建第一个用户开始使用</p>
-                <a asp-action="Create" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
+                <a asp-action="CreateOrUpdate" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
                     创建新用户
                 </a>
             </div>
@@ -127,7 +127,7 @@
 
     @if (Model != null && Model.Any())
     {
-        <a asp-action="Create" class="create-btn">
+        <a asp-action="CreateOrUpdate" class="create-btn">
             <button class="weui-btn weui-btn_primary">创建新用户</button>
         </a>
     }

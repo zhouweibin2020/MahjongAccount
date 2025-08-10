@@ -391,29 +391,11 @@
                 <i class="weui-tabbar__icon fa fa-gamepad"></i>
                 <p class="weui-tabbar__label">牌局</p>
             </a>
-            <a class="weui-tabbar__item" id="logoutBtn">
-                <i class="weui-tabbar__icon fa fa-sign-out"></i>
-                <p class="weui-tabbar__label">退出</p>
-            </a>
         </div>
     }
     <script>
         // 等待DOM加载完成
         $(document).ready(function() {
-
-            // 退出按钮确认提示
-            $('#logoutBtn').on('click', function(e) {
-                e.preventDefault();
-                const $link = $(this);
-
-                $.confirm({
-                    title: '确认退出',
-                    text: '确定要退出当前账号吗？',
-                    onOK: function() {
-                        window.location.href = "@Url.Action("Logout", "Home")";
-                    }
-                });
-            });
             if (`@Model.Game.Status` === 'ongoing') {
                 // 1. 初始化SignalR连接
                 const connection = new signalR.HubConnectionBuilder()

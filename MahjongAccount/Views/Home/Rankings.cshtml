@@ -439,10 +439,6 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a class="weui-tabbar__item" id="logoutBtn">
-            <i class="weui-tabbar__icon fa fa-sign-out"></i>
-            <p class="weui-tabbar__label">退出</p>
-        </a>
     </div>
     <script>
         // 页面加载完成后初始化
@@ -467,23 +463,6 @@
                 }, 300);
 
                 return false;
-            });
-
-            // 退出按钮确认提示
-            $('#logoutBtn').on('click', function(e) {
-                e.preventDefault();
-
-                $.confirm({
-                    title: '确认退出',
-                    text: '确定要退出当前账号吗？',
-                    onOK: function() {
-                        // 显示加载提示
-                        $.showLoading('退出中...');
-                        setTimeout(() => {
-                            window.location.href = "@Url.Action("Logout", "Home")";
-                        }, 300);
-                    }
-                });
             });
         });
     </script>

@@ -38,37 +38,68 @@ namespace MahjongAccount.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // 创建用户页面
-        public IActionResult Create()
+        // 创建或更新用户页面
+        public async Task<IActionResult> CreateOrUpdate(int? userId)
         {
-            return View();
+            if (userId.HasValue)
+            {
+                // 如果有用户ID，加载现有用户数据用于编辑
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                return View(user);
+            }
+            // 否则返回空视图用于创建新用户
+            return View(new User());
         }
 
-        // 处理用户创建提交
+        // 处理用户创建或更新提交
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string nickname, IFormFile avatar)
+        public async Task<IActionResult> CreateOrUpdate(int? id, string nickname, IFormFile? avatar)
         {
+            User user;
+            if (id.HasValue)
+            {
+                // 更新现有用户
+                user = await _context.Users.FindAsync(id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
+                user.Nickname = nickname;
+            }
+            else
+            {
+                // 创建新用户
+                user = new User
+                {
+                    Nickname = nickname,
+                    CreatedAt = DateTime.Now
+                };
+                _context.Users.Add(user);
+            }
+
             if (string.IsNullOrWhiteSpace(nickname))
             {
                 ModelState.AddModelError("Nickname", "昵称不能为空");
-                return View();
+                return View(user);
             }
-            // 检查昵称是否已存在
-            var nicknameExists = await _context.Users.AnyAsync(u => u.Nickname == nickname);
+
+            // 检查昵称唯一性（更新时排除当前用户）
+            var nicknameExists = id.HasValue
+                ? await _context.Users.AnyAsync(u => u.Nickname == nickname && u.Id != id)
+                : await _context.Users.AnyAsync(u => u.Nickname == nickname);
+
             if (nicknameExists)
             {
                 ModelState.AddModelError("Nickname", "该昵称已被使用，请选择其他昵称");
-                return View();
+                return View(user);
             }
 
-            var user = new User
-            {
-                Nickname = nickname,
-                CreatedAt = DateTime.Now
-            };
-
-            // 处理头像上传
+            // 处理头像上传（如果有新头像则更新）
             if (avatar != null && avatar.Length > 0)
             {
                 using (var memoryStream = new MemoryStream())
@@ -77,14 +108,28 @@ namespace MahjongAccount.Controllers
                     user.Avatar = memoryStream.ToArray();
                 }
             }
+            // 如果是更新且没有上传新头像，则保留原有头像
 
-            _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // 触发用户创建事件（可以在这里添加事件处理逻辑）
-            OnUserCreated(user);
+            // 触发用户创建/更新事件
+            if (!id.HasValue)
+            {
+                OnUserCreated(user);
+            }
+            else
+            {
+                OnUserUpdated(user);
+            }
 
             return RedirectToAction("UserSelect");
+        }
+
+        // 添加用户更新事件处理方法
+        private void OnUserUpdated(User user)
+        {
+            // 用户更新后的逻辑，如日志记录
+            // _logger.LogInformation($"用户更新: ID={user.Id}, 昵称={user.Nickname}");
         }
 
         // 用户创建事件处理方法

@@ -22,6 +22,12 @@
             padding: 15px;
             background-color: #fff;
             border-bottom: 1px solid #eee;
+            justify-content: space-between; /* 新增：两端对齐 */
+        }
+
+        .user-main {
+            display: flex;
+            align-items: center;
         }
 
         .user-avatar {
@@ -42,6 +48,37 @@
             font-size: 14px;
             color: #666;
         }
+
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .user-action-btn {
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .edit-profile {
+            background-color: #e8f5e9;
+            color: #1AAD19;
+        }
+
+            .edit-profile:active {
+                background-color: #dcedc8;
+            }
+
+        .logout-btn {
+            background-color: #ffebee;
+            color: #e53935;
+        }
+
+            .logout-btn:active {
+                background-color: #fce4ec;
+            }
 
         .menu-grid {
             display: grid;
@@ -120,15 +157,27 @@
 
 <body>
     <div class="user-info">
-        <img src="@(Model.User.Avatar != null
-            ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.User.Avatar)}"
-            : $"https://picsum.photos/60/60?random={Model.User.Id}")"
-             alt="@Model.User.Nickname 的头像" class="user-avatar">
-        <div>
-            <div class="user-nickname">你好，@Model.User.Nickname！</div>
-            @* <div class="user-stats"> *@
-            @*     累计牌局: @Model.User.TotalGames 局 | 总战绩: ¥@Model.User.TotalNetResult *@
-            @* </div> *@
+        <div class="user-main">
+            <img src="@(Model.User.Avatar != null
+                ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.User.Avatar)}"
+                : $"https://picsum.photos/60/60?random={Model.User.Id}")"
+                 alt="@Model.User.Nickname 的头像" class="user-avatar">
+            <div>
+                <div class="user-nickname">你好，@Model.User.Nickname！</div>
+                @* <div class="user-stats"> *@
+                @*     累计牌局: @Model.User.TotalGames 局 | 总战绩: ¥@Model.User.TotalNetResult *@
+                @* </div> *@
+            </div>
+        </div>
+
+        <!-- 新增的操作按钮 -->
+        <div class="user-actions">
+            <a href="@Url.Action("CreateOrUpdate", "User", new { userId = Model.User.Id })" class="user-action-btn edit-profile">
+                <i class="fa fa-pencil mr-1"></i>修改资料
+            </a>
+            <a href="javascript:;" class="user-action-btn logout-btn" id="headerLogoutBtn">
+                <i class="fa fa-sign-out mr-1"></i>退出
+            </a>
         </div>
     </div>
 
@@ -164,10 +213,6 @@
             <i class="weui-tabbar__icon fa fa-trophy"></i>
             <p class="weui-tabbar__label">榜单</p>
         </a>
-        <a class="weui-tabbar__item" id="logoutBtn">
-            <i class="weui-tabbar__icon fa fa-sign-out"></i>
-            <p class="weui-tabbar__label">退出</p>
-        </a>
     </div>
 
     <script>
@@ -179,10 +224,8 @@
                 showOngoingGamesModal();
             });
 
-            // 退出按钮确认提示
-            $('#logoutBtn').on('click', function(e) {
+            $('.logout-btn').on('click', function(e) {
                 e.preventDefault();
-                const $link = $(this);
 
                 $.confirm({
                     title: '确认退出',
@@ -260,7 +303,7 @@
                             `,
                             className: `game-item ${joinClass}`,
                             onClick: function() {
-                                window.location.href = '@Url.Action("Join", "Game")?gameId=' + game.id;                                
+                                window.location.href = '@Url.Action("Join", "Game")?gameId=' + game.id;
                                 return false; // 阻止自动关闭，手动控制
                             }
                         };
