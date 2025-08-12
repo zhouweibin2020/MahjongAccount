@@ -27,7 +27,9 @@
 
         body {
             padding-bottom: 50px;
-            background-color: #f5f5f5; 
+            background-color: #f5f5f5;
+            margin: 0;
+            overflow-x: hidden;
         }
 
         .page-title {
@@ -36,14 +38,42 @@
             font-size: 18px;
             font-weight: bold;
             border-bottom: 1px solid #eee;
-            background-color: #fff; 
+            background-color: #fff;
         }
 
+        /* 游戏信息区域样式 */
         .game-info {
             padding: 10px 15px;
             background-color: #f5f5f5;
             font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        /* 刷新按钮样式 - 与准备按钮高度一致 */
+        .refresh-btn {
+            background-color: #09BB07;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px; /* 调整内边距使高度匹配 */
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            height: 34px; /* 固定高度 */
+            box-sizing: border-box;
+        }
+
+            .refresh-btn i {
+                margin-right: 5px;
+                font-size: 16px;
+            }
+
+            .refresh-btn:active {
+                background-color: #089606;
+            }
 
         .players-title {
             padding: 10px 15px;
@@ -235,167 +265,185 @@
 </head>
 
 <body>
-    @if (Model.Game == null)
-    {
-        <div class="page-title">牌局信息加载失败</div>
-        <div class="empty-state" style="text-align: center; padding: 30px 0;">
-            <i class="fa fa-exclamation-circle" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
-            <p>无法获取牌局信息</p>
-            <a href="@Url.Action("Index", "Home")" class="weui-btn weui-btn_default" style="margin-top: 20px;">
-                返回首页
-            </a>
-        </div>
-    }
-    else
-    {
-        <div class="page-title">牌局 #@Model.Game.Id</div>
-        <div class="game-info">
-            开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
-        </div>
-        <div class="other-players-container">
-            @if (Model.PlayerBalances.ContainsKey(Model.CurrentUserId))
-            {
-                <div class="current-user-balance">
-                    你的结余:
-                    <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
-                          class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
-                Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
-                        ¥@Model.PlayerBalances[Model.CurrentUserId]
-                    </span>
-                </div>
-            }
+    <!-- 主内容容器 -->
+    <div class="content-container" id="contentContainer">
+        @if (Model.Game == null)
+        {
+            <div class="page-title">牌局信息加载失败</div>
+            <div class="empty-state" style="text-align: center; padding: 30px 0;">
+                <i class="fa fa-exclamation-circle" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
+                <p>无法获取牌局信息</p>
+                <a href="@Url.Action("Index", "Home")" class="weui-btn weui-btn_default" style="margin-top: 20px;">
+                    返回首页
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="page-title">牌局 #@Model.Game.Id 《@Model.Game.Name》</div>
+            <div class="game-info">
+                <span>开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                <button type="button" class="refresh-btn" id="manualRefreshBtn">
+                    <i class="fa fa-refresh"></i>
+                    <span>刷新</span>
+                </button>
+            </div>
+            <div class="other-players-container">
+                @if (Model.PlayerBalances.ContainsKey(Model.CurrentUserId))
+                {
+                    <div class="current-user-balance">
+                        你的结余:
+                        <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
+                              class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
+                    Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
+                            ¥@Model.PlayerBalances[Model.CurrentUserId]
+                        </span>
+                    </div>
+                }
 
-            <div class="players-title">参与者</div>
-            @if (Model.Game.Status == "ongoing")
-            {
-                <div class="ready-status" style="padding: 10px 15px; text-align: center; color: #666; font-size: 14px; background-color: #fff;">
-                    准备状态: @Model.ReadyPlayers/@Model.TotalPlayers 人已准备
-                    @if (Model.ReadyPlayers < Model.TotalPlayers)
-                    {
-                        <span style="color: #999;">（所有人准备后自动结束牌局）</span>
-                    }
-                </div>
-            }
-
-            @if (Model.Players.Any())
-            {
-                <div class="other-players">
-                    @{
-                        var otherPlayers = Model.Players.Where(p => p.Id != Model.CurrentUserId).ToList();
-                        if (otherPlayers.Any())
+                <div class="players-title">参与者</div>
+                @if (Model.Game.Status == "ongoing")
+                {
+                    <div class="ready-status" style="padding: 10px 15px; text-align: center; color: #666; font-size: 14px; background-color: #fff;">
+                        准备状态: @Model.ReadyPlayers/@Model.TotalPlayers 人已准备
+                        @if (Model.ReadyPlayers < Model.TotalPlayers)
                         {
-                            foreach (var player in otherPlayers)
+                            <span style="color: #999;">（所有人准备后自动结束牌局）</span>
+                        }
+                    </div>
+                }
+
+                @if (Model.Players.Any())
+                {
+                    <div class="other-players" id="playersContainer">
+                        @{
+                            var otherPlayers = Model.Players.Where(p => p.Id != Model.CurrentUserId).ToList();
+                            if (otherPlayers.Any())
                             {
-                                <div class="other-player-item">
-                                    <img src="@(player.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(player.Avatar)}" :
-                    $"https://picsum.photos/60/60?random={player.Id}")" alt="@player.Nickname 的头像"
-                                         class="player-avatar">
+                                foreach (var player in otherPlayers)
+                                {
+                                    <div class="other-player-item">
+                                        <img src="@(player.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(player.Avatar)}" :
+                        $"https://picsum.photos/60/60?random={player.Id}")" alt="@player.Nickname 的头像"
+                                             class="player-avatar">
 
-                                    <div class="player-info">
-                                        <div class="player-name">
-                                            @player.Nickname
+                                        <div class="player-info">
+                                            <div class="player-name">
+                                                @player.Nickname
+                                            </div>
+                                            <div id="balance_@player.Id" data-amount="@Model.PlayerBalances[player.Id]" class="player-balance @(Model.PlayerBalances.ContainsKey(player.Id) ?
+                                                (Model.PlayerBalances[player.Id] > 0 ? " balance-positive" :
+                            Model.PlayerBalances[player.Id] < 0 ? "balance-negative" : "balance-zero" ) : "" )">
+                                                @(Model.PlayerBalances.ContainsKey(player.Id) ? $"¥{Model.PlayerBalances[player.Id]}" : "0")
+                                            </div>
                                         </div>
-                                        <div id="balance_@player.Id" data-amount="@Model.PlayerBalances[player.Id]" class="player-balance @(Model.PlayerBalances.ContainsKey(player.Id) ?
-                                            (Model.PlayerBalances[player.Id] > 0 ? " balance-positive" :
-                        Model.PlayerBalances[player.Id] < 0 ? "balance-negative" : "balance-zero" ) : "" )">
-                                            @(Model.PlayerBalances.ContainsKey(player.Id) ? $"¥{Model.PlayerBalances[player.Id]}" : "0")
+
+                                        <div class="amount-buttons">
+                                            @if (Model.Game.Status == "ongoing")
+                                                foreach (var amount in new[] { 1, 2, 3, 12, 24, 48 })
+                                                {
+                                                    <button type="button" class="amount-btn" data-amount="@amount"
+                                                            data-from-user-id="@Model.CurrentUserId" data-to-user-id="@player.Id"
+                                                            data-game-id="@Model.Game.Id" data-to-nickname="@player.Nickname">
+                                                        @amount
+                                                    </button>
+                                                }
                                         </div>
                                     </div>
-
-                                    <div class="amount-buttons">
-                                        @if (Model.Game.Status == "ongoing")
-                                            foreach (var amount in new[] { 1, 2, 3, 12, 24, 48 })
-                                            {
-                                                <button type="button" class="amount-btn" data-amount="@amount"
-                                                        data-from-user-id="@Model.CurrentUserId" data-to-user-id="@player.Id"
-                                                        data-game-id="@Model.Game.Id" data-to-nickname="@player.Nickname">
-                                                    @amount
-                                                </button>
-                                            }
-                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state" style="text-align: center; padding: 30px 0;">
+                                    <i class="fa fa-users" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
+                                    <p>等待其他玩家加入...</p>
                                 </div>
                             }
                         }
-                        else
-                        {
-                            <div class="empty-state" style="text-align: center; padding: 30px 0;">
-                                <i class="fa fa-users" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
-                                <p>等待其他玩家加入...</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state" style="text-align: center; padding: 30px 0;">
+                        <i class="fa fa-users" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
+                        <p>暂无参与者信息</p>
+                        <button class="weui-btn weui-btn_mini weui-btn_default" onclick="refreshPage()">
+                            刷新
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="transactions" id="transactionsContainer">
+                <div class="players-title">流水记录</div>
+                @if (Model.Transactions.Any())
+                {
+                    foreach (var t in Model.Transactions)
+                    {
+                        <div class="transaction-item @(t.ToUserId == Model.CurrentUserId || t.FromUserId == Model.CurrentUserId ? "current-user" : "")">
+                            <div class="transaction-info">
+                                <div>
+                                    <span>@t.FromNickname</span>
+                                    <span> 输给 </span>
+                                    <span>@t.ToNickname</span>
+                                </div>
+                                <div class="amount-win">+@t.Amount</div>
                             </div>
-                        }
+                            <div class="time-stamp">@t.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</div>
+                        </div>
                     }
-                </div>
-            }
-            else
+                }
+                else
+                {
+                    <div class="empty-state" style="text-align: center; padding: 30px 0;">
+                        <i class="fa fa-file-text-o" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
+                        <p>暂无流水记录</p>
+                        <p style="font-size: 14px; margin-top: 5px;">开始记录你的第一笔交易吧</p>
+                    </div>
+                }
+            </div>
+
+            @if (Model.CurrentUser != null)
             {
-                <div class="empty-state" style="text-align: center; padding: 30px 0;">
-                    <i class="fa fa-users" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
-                    <p>暂无参与者信息</p>
-                    <button class="weui-btn weui-btn_mini weui-btn_default" onclick="location.reload()">
-                        刷新
+                <div class="action-btn" style="margin-bottom: 10px;">
+                    <button type="button" id="readyButton" class="weui-btn @(Model.Game.Status == "ended" ? "weui-btn_primary" :
+                Model.CurrentUser.IsReady ? "weui-btn_default" : "weui-btn_primary" )" style="width: 100%;"
+                            data-game-id="@Model.Game.Id" data-is-ready="@Model.CurrentUser.IsReady">
+                        @(Model.Game.Status == "ended" ? "查看结算" : Model.CurrentUser.IsReady ? "取消准备" : "准备结束")
                     </button>
                 </div>
             }
-        </div>
 
-        <div class="transactions">
-            <div class="players-title">流水记录</div>
-            @if (Model.Transactions.Any())
-            {
-                foreach (var t in Model.Transactions)
-                {
-                    <div class="transaction-item @(t.ToUserId == Model.CurrentUserId || t.FromUserId == Model.CurrentUserId ? "current-user" : "")">
-                        <div class="transaction-info">
-                            <div>
-                                <span>@t.FromNickname</span>
-                                <span> 输给 </span>
-                                <span>@t.ToNickname</span>
-                            </div>
-                            <div class="amount-win">+@t.Amount</div>
-                        </div>
-                        <div class="time-stamp">@t.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</div>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="empty-state" style="text-align: center; padding: 30px 0;">
-                    <i class="fa fa-file-text-o" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
-                    <p>暂无流水记录</p>
-                    <p style="font-size: 14px; margin-top: 5px;">开始记录你的第一笔交易吧</p>
-                </div>
-            }
-        </div>
-
-        @if (Model.CurrentUser != null)
-        {
-            <div class="action-btn" style="margin-bottom: 10px;">
-                <button type="button" id="readyButton" class="weui-btn @(Model.Game.Status == "ended" ? "weui-btn_primary" :
-            Model.CurrentUser.IsReady ? "weui-btn_default" : "weui-btn_primary" )" style="width: 100%;"
-                        data-game-id="@Model.Game.Id" data-is-ready="@Model.CurrentUser.IsReady">
-                    @(Model.Game.Status == "ended" ? "查看结算" : Model.CurrentUser.IsReady ? "取消准备" : "准备结束")
-                </button>
+            <div class="weui-tabbar">
+                <a href="@Url.Action("Index", "Home")" class="weui-tabbar__item">
+                    <i class="weui-tabbar__icon fa fa-home"></i>
+                    <p class="weui-tabbar__label">首页</p>
+                </a>
+                <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+                    <i class="weui-tabbar__icon fa fa-history"></i>
+                    <p class="weui-tabbar__label">历史</p>
+                </a>
+                <a href="#" class="weui-tabbar__item weui-bar__item_on">
+                    <i class="weui-tabbar__icon fa fa-gamepad"></i>
+                    <p class="weui-tabbar__label">牌局</p>
+                </a>
             </div>
         }
+    </div>
 
-        <div class="weui-tabbar">
-            <a href="@Url.Action("Index", "Home")" class="weui-tabbar__item">
-                <i class="weui-tabbar__icon fa fa-home"></i>
-                <p class="weui-tabbar__label">首页</p>
-            </a>
-            <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
-                <i class="weui-tabbar__icon fa fa-history"></i>
-                <p class="weui-tabbar__label">历史</p>
-            </a>
-            <a href="#" class="weui-tabbar__item weui-bar__item_on">
-                <i class="weui-tabbar__icon fa fa-gamepad"></i>
-                <p class="weui-tabbar__label">牌局</p>
-            </a>
-        </div>
-    }
     <script>
         // 等待DOM加载完成
         $(document).ready(function() {
+            // 从Model初始化当前已在房间的玩家ID集合
+            const initialPlayerIds = new Set();
+            @foreach (var player in Model.Players)
+            {
+                @:initialPlayerIds.add(@player.Id);
+            }
+
+            // 初始化手动刷新按钮事件
+            initRefreshButton();
+
             if (`@Model.Game.Status` === 'ongoing') {
                 // 1. 初始化SignalR连接
                 const connection = new signalR.HubConnectionBuilder()
@@ -427,13 +475,7 @@
                                                toBalance < 0 ? 'balance-negative' : 'balance-zero');
 
                         // 刷新交易列表
-                        fetch(`@Url.Action("Room", "Game", new { gameId = Model.Game.Id, view_flow = "true" })`)
-                            .then(response => response.text())
-                            .then(html => {
-                                document.querySelector(".transactions").innerHTML = new DOMParser()
-                                    .parseFromString(html, "text/html")
-                                    .querySelector(".transactions").innerHTML;
-                            });
+                        refreshTransactions();
                     }
                 });
 
@@ -455,32 +497,19 @@
 
                 connection.on("UserJoined", (data) => {
                     if (data.gameId === @Model.Game.Id) {
-                        // 显示jQuery WeUI通知
-                        $.toast(data.message, {
-                            duration: 3000,
-                            type: 'success'
-                        });
+                        // 检查用户是否是新加入的（不在初始玩家列表中）
+                        if (!initialPlayerIds.has(data.userId)) {
+                            // 显示顶部提示
+                            $.toptip(data.message, 'success', 3000);
+                            // 将新用户添加到集合中，避免重复通知
+                            initialPlayerIds.add(data.userId);
+                        }
 
                         // 刷新玩家列表
-                        fetch(`@Url.Action("Room", "Game", new { gameId = Model.Game.Id })`)
-                            .then(response => response.text())
-                            .then(html => {
-                                document.querySelector(".other-players").innerHTML = new DOMParser()
-                                    .parseFromString(html, "text/html")
-                                    .querySelector(".other-players").innerHTML;
-                                setbuttonClickEvent();
-                            });
+                        refreshPlayers();
                     }
                 });
 
-                connection.on("UserLeft", (data) => {
-                    if (data.gameId === @Model.Game.Id) {
-                        $.toast(data.message, {
-                            duration: 3000,
-                            type: 'info'
-                        });
-                    }
-                });
 
                 // 3. 启动SignalR连接
                 async function startConnection() {
@@ -490,6 +519,7 @@
                         await connection.invoke("JoinGame", @Model.Game.Id, @Model.CurrentUserId);
                     } catch (err) {
                         console.error("SignalR连接失败:", err);
+                        $.toptip('连接失败，正在重试', 'error', 2000);
                         setTimeout(startConnection, 5000);
                     }
                 }
@@ -499,107 +529,6 @@
                 window.addEventListener("beforeunload", () => {
                     connection.stop();
                 });
-
-                // 绑定金额按钮点击事件
-                function setButtonClickEvent() {
-                    $('.amount-btn').off('click').on('click', async function() {
-                        const $btn = $(this);
-                        const amount = parseInt($btn.data('amount'));
-                        const toNickname = $btn.data('to-nickname');
-                        const confirmMessage = `确认要向 ${toNickname || '目标用户'} 转账 ${amount} 元吗？`;
-
-                        // 使用jQuery WeUI的确认对话框
-                        $.confirm({
-                            title: '确认转账',
-                            text: confirmMessage,
-                            onOK: async function () {
-                                const fromUserId = parseInt($btn.data('from-user-id'));
-                                const toUserId = parseInt($btn.data('to-user-id'));
-                                const gameId = parseInt($btn.data('game-id'));
-
-                                // 按钮状态处理
-                                $btn.prop('disabled', true).css('background-color', '#ccc');
-
-                                try {
-                                    const response = await fetch('@Url.Action("RecordTransaction", "Game")', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            GameId: gameId,
-                                            FromUserId: fromUserId,
-                                            ToUserId: toUserId,
-                                            Amount: amount
-                                        })
-                                    });
-
-                                    const result = await response.json();
-
-                                    if (!result.success) {
-                                        $.toast('记录失败: ' + (result.message || '未知错误'), 'forbidden');
-                                    } else {
-                                        $.toast('记录成功', 'success');
-                                    }
-                                } catch (error) {
-                                    console.error('提交失败:', error);
-                                    $.toast('提交失败，请重试', 'forbidden');
-                                } finally {
-                                    // 恢复按钮状态
-                                    $btn.prop('disabled', false).css('background-color', '');
-                                }
-                            },
-                            onCancel: function () {
-                                // 用户取消操作
-                                return;
-                            }
-                        });
-                    });
-                }
-
-                // 初始化准备按钮事件
-                function initReadyButton() {
-                    $('#readyButton').off('click').on('click', async function() {
-                        const $btn = $(this);
-                        const gameId = parseInt($btn.data('game-id'));
-                        const isReady = $btn.data('is-ready') === true;
-                        const newReadyState = !isReady;
-
-                        // 按钮状态处理
-                        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 处理中...');
-
-                        try {
-                            const response = await fetch('@Url.Action("ToggleReady", "Game")', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    gameId: gameId,
-                                    isReady: newReadyState
-                                })
-                            });
-
-                            const result = await response.json();
-
-                            if (result.success) {
-                                $btn.data('is-ready', newReadyState)
-                                    .removeClass('weui-btn_default weui-btn_primary')
-                                    .addClass(newReadyState ? 'weui-btn_default' : 'weui-btn_primary')
-                                    .html(newReadyState ? '取消准备' : '准备结束');
-                            } else {
-                                $.toast('操作失败: ' + (result.message || '未知错误'), 'forbidden');
-                                $btn.html(isReady ? '取消准备' : '准备结束');
-                            }
-                        } catch (error) {
-                            console.error('准备状态更新失败:', error);
-                            $.toast('操作失败，请重试', 'forbidden');
-                            $btn.html(isReady ? '取消准备' : '准备结束');
-                        } finally {
-                            $btn.prop('disabled', false);
-                        }
-                    });
-                }
-
-                // 初始化事件
-                setButtonClickEvent();
-                initReadyButton();
             }
 
             // 牌局已结束逻辑
@@ -608,7 +537,214 @@
                     window.location.href = `@Url.Action("Result", "Game", new { gameId = Model.Game.Id })`;
                 });
             }
+
+            // 绑定金额按钮点击事件
+            setButtonClickEvent();
+
+            // 初始化准备按钮事件
+            initReadyButton();
         });
+
+        // 初始化刷新按钮事件
+        function initRefreshButton() {
+            const $refreshBtn = $('#manualRefreshBtn');
+
+            $refreshBtn.on('click', async function() {
+                // 防止重复点击
+                if ($refreshBtn.hasClass('loading')) {
+                    return;
+                }
+
+                // 显示加载状态 - 使用Font Awesome的fa-spin类
+                $refreshBtn.addClass('loading');
+                const originalIcon = $refreshBtn.find('i').attr('class');
+                $refreshBtn.find('i').attr('class', 'fa fa-spinner fa-spin');
+                const originalText = $refreshBtn.find('span').text();
+                $refreshBtn.find('span').text('刷新中...');
+
+                try {
+                    // 执行刷新操作
+                    await refreshPage();
+                } catch (error) {
+                    console.error('刷新失败:', error);
+                } finally {
+                    // 恢复按钮状态
+                    $refreshBtn.removeClass('loading');
+                    $refreshBtn.find('i').attr('class', originalIcon);
+                    $refreshBtn.find('span').text(originalText);
+                }
+            });
+        }
+
+        // 页面整体刷新 - 返回Promise便于异步处理
+        function refreshPage() {
+            return new Promise((resolve, reject) => {
+                $.showLoading('刷新中...');
+
+                fetch('@Url.Action("Room", "Game", new { gameId = Model.Game.Id })')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应不正常');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        const newDoc = new DOMParser().parseFromString(html, "text/html");
+
+                        // 更新玩家列表
+                        const $newPlayers = $(newDoc).find('#playersContainer').html();
+                        $('#playersContainer').html($newPlayers);
+
+                        // 更新交易记录
+                        const $newTransactions = $(newDoc).find('#transactionsContainer').html();
+                        $('#transactionsContainer').html($newTransactions);
+
+                        // 更新准备状态
+                        const $newReadyStatus = $(newDoc).find('.ready-status').html();
+                        if ($newReadyStatus) {
+                            $('.ready-status').html($newReadyStatus);
+                        }
+
+                        // 更新当前用户余额
+                        const $newBalance = $(newDoc).find(`#balance_@Model.CurrentUserId`).clone();
+                        $(`#balance_@Model.CurrentUserId`).replaceWith($newBalance);
+
+                        // 重新绑定事件
+                        setButtonClickEvent();
+                        initReadyButton();
+
+                        // 隐藏加载提示
+                        $.hideLoading();
+                        $.toptip('刷新成功', 'success', 1000);
+                        resolve();
+                    })
+                    .catch(error => {
+                        console.error('刷新失败:', error);
+                        $.hideLoading();
+                        $.toptip('刷新失败，请重试', 'error');
+                        reject(error);
+                    });
+            });
+        }
+
+        // 刷新玩家列表
+        function refreshPlayers() {
+            fetch('@Url.Action("Room", "Game", new { gameId = Model.Game.Id })')
+                .then(response => response.text())
+                .then(html => {
+                    const $newPlayers = $(new DOMParser().parseFromString(html, "text/html")).find('#playersContainer').html();
+                    $('#playersContainer').html($newPlayers);
+                    setButtonClickEvent();
+                });
+        }
+
+        // 刷新交易记录
+        function refreshTransactions() {
+            fetch('@Url.Action("Room", "Game", new { gameId = Model.Game.Id, view_flow = "true" })')
+                .then(response => response.text())
+                .then(html => {
+                    const $newTransactions = $(new DOMParser().parseFromString(html, "text/html")).find('#transactionsContainer').html();
+                    $('#transactionsContainer').html($newTransactions);
+                });
+        }
+
+        // 绑定金额按钮点击事件
+        function setButtonClickEvent() {
+            $('.amount-btn').off('click').on('click', async function() {
+                const $btn = $(this);
+                const amount = parseInt($btn.data('amount'));
+                const toNickname = $btn.data('to-nickname');
+                const confirmMessage = `确认要向 ${toNickname || '目标用户'} 转账 ${amount} 元吗？`;
+
+                // 使用jQuery WeUI的确认对话框
+                $.confirm({
+                    title: '确认转账',
+                    text: confirmMessage,
+                    onOK: async function () {
+                        const fromUserId = parseInt($btn.data('from-user-id'));
+                        const toUserId = parseInt($btn.data('to-user-id'));
+                        const gameId = parseInt($btn.data('game-id'));
+
+                        // 按钮状态处理
+                        $btn.prop('disabled', true).css('background-color', '#ccc');
+
+                        try {
+                            const response = await fetch('@Url.Action("RecordTransaction", "Game")', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    GameId: gameId,
+                                    FromUserId: fromUserId,
+                                    ToUserId: toUserId,
+                                    Amount: amount
+                                })
+                            });
+
+                            const result = await response.json();
+
+                            if (!result.success) {
+                                $.toptip('记录失败: ' + (result.message || '未知错误'), 'error');
+                            } else {
+                                $.toptip('记录成功', 'success');
+                            }
+                        } catch (error) {
+                            console.error('提交失败:', error);
+                            $.toptip('提交失败，请重试', 'error');
+                        } finally {
+                            // 恢复按钮状态
+                            $btn.prop('disabled', false).css('background-color', '');
+                        }
+                    },
+                    onCancel: function () {
+                        // 用户取消操作
+                        return;
+                    }
+                });
+            });
+        }
+
+        // 初始化准备按钮事件
+        function initReadyButton() {
+            $('#readyButton').off('click').on('click', async function() {
+                const $btn = $(this);
+                const gameId = parseInt($btn.data('game-id'));
+                const isReady = $btn.data('is-ready') === true;
+                const newReadyState = !isReady;
+
+                // 按钮状态处理
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 处理中...');
+
+                try {
+                    const response = await fetch('@Url.Action("ToggleReady", "Game")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            gameId: gameId,
+                            isReady: newReadyState
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        $btn.data('is-ready', newReadyState)
+                            .removeClass('weui-btn_default weui-btn_primary')
+                            .addClass(newReadyState ? 'weui-btn_default' : 'weui-btn_primary')
+                            .html(newReadyState ? '取消准备' : '准备结束');
+                        $.toptip(newReadyState ? '已准备结束牌局' : '已取消准备', 'success');
+                    } else {
+                        $.toptip('操作失败: ' + (result.message || '未知错误'), 'error');
+                        $btn.html(isReady ? '取消准备' : '准备结束');
+                    }
+                } catch (error) {
+                    console.error('准备状态更新失败:', error);
+                    $.toptip('操作失败，请重试', 'error');
+                    $btn.html(isReady ? '取消准备' : '准备结束');
+                } finally {
+                    $btn.prop('disabled', false);
+                }
+            });
+        }
     </script>
 </body>
 

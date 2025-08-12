@@ -42,7 +42,7 @@ namespace MahjongAccount.Hubs
             // 3. 通知房间内其他用户“有新用户加入”
             await Clients.OthersInGroup($"Game_{gameId}").SendAsync(
                 "UserJoined",
-                new { GameId = gameId, Message = $"用户 {(joinUser?.Nickname ?? userId.ToString())} 加入了牌局" }
+                new { GameId = gameId, userId, Message = $"用户 {(joinUser?.Nickname ?? userId.ToString())} 加入了牌局" }
             );
         }
 
@@ -66,12 +66,6 @@ namespace MahjongAccount.Hubs
                     await Groups.RemoveFromGroupAsync(connectionId, $"Game_{gameIdToRemove}");
 
                     var leftUser = await _context.Users.FindAsync(userId);
-
-                    // 3. 通知房间内其他用户
-                    await Clients.OthersInGroup($"Game_{gameIdToRemove}").SendAsync(
-                        "UserLeft",
-                        new { GameId = gameIdToRemove, Message = $"用户 {(leftUser?.Nickname ?? userId.ToString())} 离开了牌局" }
-                    );
                 }
             }
 
