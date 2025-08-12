@@ -531,13 +531,6 @@
                 });
             }
 
-            // 牌局已结束逻辑
-            if (`@Model.Game.Status` === 'ended') {
-                $('#readyButton').off('click').on('click', function() {
-                    window.location.href = `@Url.Action("Result", "Game", new { gameId = Model.Game.Id })`;
-                });
-            }
-
             // 绑定金额按钮点击事件
             setButtonClickEvent();
 
@@ -705,45 +698,54 @@
 
         // 初始化准备按钮事件
         function initReadyButton() {
-            $('#readyButton').off('click').on('click', async function() {
-                const $btn = $(this);
-                const gameId = parseInt($btn.data('game-id'));
-                const isReady = $btn.data('is-ready') === true;
-                const newReadyState = !isReady;
+            // 牌局已结束逻辑
+            if (`@Model.Game.Status` === 'ended') {
+                $('#readyButton').off('click').on('click', function() {
+                    window.location.href = `@Url.Action("Result", "Game", new { gameId = Model.Game.Id })`;
+                });
+            } 
+            else
+            {
+                $('#readyButton').off('click').on('click', async function() {
+                    const $btn = $(this);
+                    const gameId = parseInt($btn.data('game-id'));
+                    const isReady = $btn.data('is-ready') === true;
+                    const newReadyState = !isReady;
 
-                // 按钮状态处理
-                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 处理中...');
+                    // 按钮状态处理
+                    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 处理中...');
 
-                try {
-                    const response = await fetch('@Url.Action("ToggleReady", "Game")', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            gameId: gameId,
-                            isReady: newReadyState
-                        })
-                    });
+                    try {
+                        const response = await fetch('@Url.Action("ToggleReady", "Game")', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                gameId: gameId,
+                                isReady: newReadyState
+                            })
+                        });
 
-                    const result = await response.json();
+                        const result = await response.json();
 
-                    if (result.success) {
-                        $btn.data('is-ready', newReadyState)
-                            .removeClass('weui-btn_default weui-btn_primary')
-                            .addClass(newReadyState ? 'weui-btn_default' : 'weui-btn_primary')
-                            .html(newReadyState ? '取消准备' : '准备结束');
-                        $.toptip(newReadyState ? '已准备结束牌局' : '已取消准备', 'success');
-                    } else {
-                        $.toptip('操作失败: ' + (result.message || '未知错误'), 'error');
+                        if (result.success) {
+                            $btn.data('is-ready', newReadyState)
+                                .removeClass('weui-btn_default weui-btn_primary')
+                                .addClass(newReadyState ? 'weui-btn_default' : 'weui-btn_primary')
+                                .html(newReadyState ? '取消准备' : '准备结束');
+                            $.toptip(newReadyState ? '已准备结束牌局' : '已取消准备', 'success');
+                        } else {
+                            $.toptip('操作失败: ' + (result.message || '未知错误'), 'error');
+                            $btn.html(isReady ? '取消准备' : '准备结束');
+                        }
+                    } catch (error) {
+                        console.error('准备状态更新失败:', error);
+                        $.toptip('操作失败，请重试', 'error');
                         $btn.html(isReady ? '取消准备' : '准备结束');
+                    } finally {
+                        $btn.prop('disabled', false);
                     }
-                } catch (error) {
-                    console.error('准备状态更新失败:', error);
-                    $.toptip('操作失败，请重试', 'error');
-                    $btn.html(isReady ? '取消准备' : '准备结束');
-                } finally {
-                    $btn.prop('disabled', false);
-                }
-            });
+                });
+            }
         }
     </script>
 </body>
