@@ -6,10 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 添加数据库上下文
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=database.db"));
+    options.UseSqlite("Data Source=data/database.db"));
 
 // 添加SignalR
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(30); // 延长客户端超时
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15); // 增加心跳频率
+});
 
 // 添加会话支持
 builder.Services.AddSession(options =>
@@ -42,6 +46,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// 启用 WebSocket 中间件（需在 UseRouting 之前）
+app.UseWebSockets();
 app.UseRouting();
 
 app.UseSession();

@@ -56,6 +56,15 @@
             padding-bottom: 50px;
             background-color: #f5f5f5;
         }
+
+        .weui-btn_default {
+            background-color: #EAEBEC;
+            color: #06ae56;
+        }
+
+            .weui-btn_default:active {
+                background-color: #e6e6e6;
+            }
     </style>
 </head>
 <body>
@@ -74,6 +83,15 @@
                     </div>
 
                     <div class="weui-cell">
+                        <div class="weui-cell__hd"><label class="weui-label">牌局类型</label></div>
+                        <div class="weui-cell__bd">
+                            <input type="text" class="weui-input" id="gameTypeInput" readonly
+                                   placeholder="请选择牌局类型" value="川麻">
+                            <input type="hidden" name="type" id="gameTypeValue" value="川麻">
+                        </div>
+                    </div>
+
+                    <div class="weui-cell">
                         <div class="weui-cell__hd"><label class="weui-label">备注信息</label></div>
                         <div class="weui-cell__bd">
                             <textarea class="weui-textarea" name="remarks" rows="3" placeholder="请输入备注（可选）"></textarea>
@@ -83,7 +101,7 @@
 
                 <div class="btn-area">
                     <button type="submit" class="weui-btn weui-btn_primary">创建牌局</button>
-                    <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_default">返回首页</a>
+                    <button type="button" class="weui-btn weui-btn_default" style="margin-top: 10px;" onclick="window.history.back();">返回</button>
                 </div>
             }
         </div>
@@ -103,5 +121,16 @@
             <p class="weui-tabbar__label">榜单</p>
         </a>
     </div>
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
+    <script>
+        // 确保DOM加载完成后执行
+        $(document).ready(function() {
+            $("#gameTypeInput").select({
+              title: "选择牌局类型",
+              items: ["川麻", "宝中宝"]
+            });
+        });
+    </script>
 </body>
 </html>

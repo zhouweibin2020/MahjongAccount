@@ -28,6 +28,8 @@ namespace MahjongAccount.Data
                 .HasIndex(g => new { g.Status, g.CreatedAt }); // 复合索引：状态+创建时间
             modelBuilder.Entity<Game>()
                 .HasIndex(g => g.CreatorId); // 按创建者查询索引
+            modelBuilder.Entity<Game>()
+                .HasIndex(g => new { g.Type, g.Status }); // 按类型+状态查询牌局
 
             // 3. GamePlayer表：优化加入牌局检查和查询牌局玩家（高频关联查询）
             modelBuilder.Entity<GamePlayer>()

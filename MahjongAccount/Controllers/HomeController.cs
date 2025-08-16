@@ -154,8 +154,8 @@ public class HomeController : Controller
         // ¼ÆËã×Ü¼Æ
         ViewData["TotalGames"] = historyItems.Count;
         ViewData["TotalNetResult"] = historyItems.Sum(item => item.UserNetResult);
-        ViewData["TotalWin"] = historyItems.Sum(item => item.UserTotalWin);
-        ViewData["TotalLose"] = historyItems.Sum(item => item.UserTotalLose);
+        ViewData["TotalWin"] = historyItems.Count(item => item.UserNetResult > 0);
+        ViewData["TotalLose"] = historyItems.Count(item => item.UserNetResult < 0);
 
         return View(historyItems);
     }

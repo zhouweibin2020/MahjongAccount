@@ -20,180 +20,180 @@
     <script src="~/js/jquery-weui.js"></script>
     <style>
         .weui-tabbar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
         }
 
         body {
-            padding-bottom: 50px;
-            background-color: #f5f5f5;
-            margin: 0;
-            overflow-x: hidden;
+        padding-bottom: 50px;
+        background-color: #f5f5f5;
+        margin: 0;
+        overflow-x: hidden;
         }
 
         .page-title {
-            text-align: center;
-            padding: 15px 0;
-            font-size: 18px;
-            font-weight: bold;
-            border-bottom: 1px solid #eee;
-            background-color: #fff;
+        text-align: center;
+        padding: 15px 0;
+        font-size: 18px;
+        font-weight: bold;
+        border-bottom: 1px solid #eee;
+        background-color: #fff;
         }
 
         /* 游戏信息区域样式 */
         .game-info {
-            padding: 10px 15px;
-            background-color: #f5f5f5;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        padding: 10px 15px;
+        background-color: #f5f5f5;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         }
 
         /* 刷新按钮样式 - 与准备按钮高度一致 */
         .refresh-btn {
-            background-color: #09BB07;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 12px; /* 调整内边距使高度匹配 */
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            height: 34px; /* 固定高度 */
-            box-sizing: border-box;
+        background-color: #09BB07;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 12px; /* 调整内边距使高度匹配 */
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        height: 34px; /* 固定高度 */
+        box-sizing: border-box;
         }
 
-            .refresh-btn i {
-                margin-right: 5px;
-                font-size: 16px;
-            }
+        .refresh-btn i {
+        margin-right: 5px;
+        font-size: 16px;
+        }
 
-            .refresh-btn:active {
-                background-color: #089606;
-            }
+        .refresh-btn:active {
+        background-color: #089606;
+        }
 
         .players-title {
-            padding: 10px 15px;
-            font-size: 16px;
-            font-weight: 500;
-            border-bottom: 1px solid #eee;
-            background-color: #fff;
+        padding: 10px 15px;
+        font-size: 16px;
+        font-weight: 500;
+        border-bottom: 1px solid #eee;
+        background-color: #fff;
         }
 
         .players-list {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 10px 15px;
-            gap: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 10px 15px;
+        gap: 15px;
         }
 
         .player-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 70px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 70px;
         }
 
         .player-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            margin-bottom: 5px;
-            object-fit: cover;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-bottom: 5px;
+        object-fit: cover;
         }
 
         .player-name {
-            font-size: 14px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
+        font-size: 14px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
         }
 
         .ready-tag {
-            color: #1AAD19;
-            font-size: 12px;
-            margin-top: 2px;
+        color: #1AAD19;
+        font-size: 12px;
+        margin-top: 2px;
         }
 
         .transactions {
-            margin-top: 15px;
-            padding-bottom: 70px;
-            background-color: #fff;
+        margin-top: 15px;
+        padding-bottom: 70px;
+        background-color: #fff;
         }
 
         .transaction-item {
-            padding: 10px 15px;
-            border-bottom: 1px solid #eee;
-            background-color: #fff;
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+        background-color: #fff;
         }
 
         .transaction-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         }
 
         .amount-win {
-            color: #E64340;
-            font-weight: bold;
+        color: #E64340;
+        font-weight: bold;
         }
 
         .amount-lose {
-            color: #1AAD19;
-            font-weight: bold;
+        color: #1AAD19;
+        font-weight: bold;
         }
 
         .time-stamp {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
+        font-size: 12px;
+        color: #999;
+        margin-top: 5px;
         }
 
         .action-btn {
-            position: fixed;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            display: flex;
-            gap: 10px;
+        position: fixed;
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        display: flex;
+        gap: 10px;
         }
 
         .other-players {
-            padding: 15px;
-            background-color: #fff;
+        padding: 15px;
+        background-color: #fff;
         }
 
         .other-player-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
         }
 
         .player-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-right: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-right: 15px;
         }
 
         .player-name {
-            font-size: 16px;
-            min-width: 60px;
-            text-align: center;
+        font-size: 16px;
+        min-width: 60px;
+        text-align: center;
         }
 
         .player-balance {
-            font-size: 14px;
-            min-width: 60px;
-            text-align: center;
+        font-size: 14px;
+        min-width: 60px;
+        text-align: center;
         }
 
         .player-avatar {
@@ -204,9 +204,9 @@
         }
 
         .amount-buttons {
-            display: flex;
-            gap: 8px;
-            white-space: nowrap;
+        display: flex;
+        gap: 8px;
+        white-space: nowrap;
         }
 
         .amount-btn {
@@ -220,46 +220,46 @@
             color: #000 !important;
         }
 
-            .amount-btn:active {
-                background-color: #e0e0e0;
-            }
+        .amount-btn:active {
+        background-color: #e0e0e0;
+        }
 
         .amount-form {
-            margin: 0;
-            padding: 0;
+        margin: 0;
+        padding: 0;
         }
 
         .current-user-balance {
-            padding: 10px 15px;
-            font-weight: bold;
-            font-size: 16px;
-            background-color: #f5f5f5;
-            border-bottom: 1px solid #eee;
+        padding: 10px 15px;
+        font-weight: bold;
+        font-size: 16px;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #eee;
         }
 
         .balance-positive {
-            color: red;
+        color: red;
         }
 
         .balance-negative {
-            color: #1AAD19;
+        color: #1AAD19;
         }
 
         .balance-zero {
-            color: #000;
+        color: #000;
         }
 
         .flow-view-indicator {
-            padding: 8px 15px;
-            background-color: #fff8e6;
-            color: #ff9800;
-            font-size: 14px;
-            text-align: center;
-            border-bottom: 1px solid #ffe0b2;
+        padding: 8px 15px;
+        background-color: #fff8e6;
+        color: #ff9800;
+        font-size: 14px;
+        text-align: center;
+        border-bottom: 1px solid #ffe0b2;
         }
 
         .current-user {
-            background-color: #C8DCFA;
+        background-color: #C8DCFA;
         }
     </style>
 </head>
@@ -294,7 +294,7 @@
                     <div class="current-user-balance">
                         你的结余:
                         <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
-                              class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
+                        class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
                     Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
                             ¥@Model.PlayerBalances[Model.CurrentUserId]
                         </span>
@@ -325,7 +325,7 @@
                                     <div class="other-player-item">
                                         <img src="@(player.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(player.Avatar)}" :
                         $"https://picsum.photos/60/60?random={player.Id}")" alt="@player.Nickname 的头像"
-                                             class="player-avatar">
+                                        class="player-avatar">
 
                                         <div class="player-info">
                                             <div class="player-name">
@@ -340,14 +340,17 @@
 
                                         <div class="amount-buttons">
                                             @if (Model.Game.Status == "ongoing")
-                                                foreach (var amount in new[] { 1, 2, 3, 12, 24, 48 })
+                                            {
+                                                var btns = Model.Game.Type == "川麻" ? new[] { "杠", "2", "12", "24", "48" } : new[] { "1", "2", "4", "8", "宝中宝", "其他" };
+                                                foreach (var amount in btns)
                                                 {
-                                                    <button type="button" class="amount-btn" data-amount="@amount"
+                                                    <button type="button" class="amount-btn" style="@(amount == "宝中宝" ? "width: 50px;" : "" )" data-amount="@amount"
                                                             data-from-user-id="@Model.CurrentUserId" data-to-user-id="@player.Id"
                                                             data-game-id="@Model.Game.Id" data-to-nickname="@player.Nickname">
                                                         @amount
                                                     </button>
                                                 }
+                                            }
                                         </div>
                                     </div>
                                 }
@@ -453,29 +456,34 @@
 
                 // 2. 注册服务器推送事件的处理函数
                 connection.on("NewTransaction", (data) => {
-                    if (data.gameId === @Model.Game.Id) {
-                        // 更新输家金额
-                        var $currentUserBalance = $(`#balance_${data.fromUserId}`);
-                        var currentBalance = parseInt($currentUserBalance.attr('data-amount'));
-                        currentBalance -= data.amount;
-                        $currentUserBalance.attr('data-amount', currentBalance)
-                                           .text(`¥${currentBalance}`)
-                                           .removeClass('balance-positive balance-negative balance-zero')
-                                           .addClass(currentBalance > 0 ? 'balance-positive' :
-                                                    currentBalance < 0 ? 'balance-negative' : 'balance-zero');
+                    try {
+                        if (data.gameId === @Model.Game.Id) {
+                            // 更新输家金额
+                            var $currentUserBalance = $(`#balance_${data.fromUserId}`);
+                            var currentBalance = parseInt($currentUserBalance.attr('data-amount'));
+                            currentBalance -= data.amount;
+                            $currentUserBalance.attr('data-amount', currentBalance)
+                                               .text(`¥${currentBalance}`)
+                                               .removeClass('balance-positive balance-negative balance-zero')
+                                               .addClass(currentBalance > 0 ? 'balance-positive' :
+                                                        currentBalance < 0 ? 'balance-negative' : 'balance-zero');
 
-                        // 更新赢家金额
-                        var $toUserBalance = $(`#balance_${data.toUserId}`);
-                        var toBalance = parseInt($toUserBalance.attr('data-amount'));
-                        toBalance += data.amount;
-                        $toUserBalance.attr('data-amount', toBalance)
-                                      .text(`¥${toBalance}`)
-                                      .removeClass('balance-positive balance-negative balance-zero')
-                                      .addClass(toBalance > 0 ? 'balance-positive' :
-                                               toBalance < 0 ? 'balance-negative' : 'balance-zero');
+                            // 更新赢家金额
+                            var $toUserBalance = $(`#balance_${data.toUserId}`);
+                            var toBalance = parseInt($toUserBalance.attr('data-amount'));
+                            toBalance += data.amount;
+                            $toUserBalance.attr('data-amount', toBalance)
+                                          .text(`¥${toBalance}`)
+                                          .removeClass('balance-positive balance-negative balance-zero')
+                                          .addClass(toBalance > 0 ? 'balance-positive' :
+                                                   toBalance < 0 ? 'balance-negative' : 'balance-zero');
 
-                        // 刷新交易列表
-                        refreshTransactions();
+                            // 刷新交易列表
+                            refreshTransactions();
+                        }
+                    } catch (err) {
+                        console.error("NewTransaction刷新失败:", err);
+                        $.toptip('刷新记账失败', 'error', 2000);
                     }
                 });
 
@@ -519,10 +527,15 @@
                         await connection.invoke("JoinGame", @Model.Game.Id, @Model.CurrentUserId);
                     } catch (err) {
                         console.error("SignalR连接失败:", err);
-                        $.toptip('连接失败，正在重试', 'error', 2000);
+                        $.toptip('连接失败，正在重试', 'error', 3000);
                         setTimeout(startConnection, 5000);
                     }
                 }
+                // 连接关闭时自动重连
+                connection.onclose(async () => {
+                    await startConnection();
+                });
+
                 startConnection();
 
                 // 4. 页面关闭时断开连接
@@ -645,55 +658,103 @@
         function setButtonClickEvent() {
             $('.amount-btn').off('click').on('click', async function() {
                 const $btn = $(this);
-                const amount = parseInt($btn.data('amount'));
-                const toNickname = $btn.data('to-nickname');
-                const confirmMessage = `确认要向 ${toNickname || '目标用户'} 转账 ${amount} 元吗？`;
+                var text = $btn.data('amount');
+                switch(text){
+                    case "杠":
+                        $.modal({
+                            title: "杠",
+                            buttons: [
+                                { text: "1", onClick: async function(){ await recordTransaction($btn, 1); } },
+                                { text: "2", onClick: async function(){ await recordTransaction($btn, 2); } },
+                                { text: "3", onClick: async function(){ await recordTransaction($btn, 3); } },
+                                { text: "4", onClick: async function(){ await recordTransaction($btn, 4); } },
+                                { text: "6", onClick: async function(){ await recordTransaction($btn, 6); } },
+                                { text: "取消", className: "default" },
+                            ]
+                        });
+                        break;
+                    case "宝中宝":
+                        $.modal({
+                            title: "宝中宝",
+                            buttons: [
+                                { text: "16", onClick: async function(){ await recordTransaction($btn, 16); } },
+                                { text: "32", onClick: async function(){ await recordTransaction($btn, 32); } },
+                                { text: "64", onClick: async function(){ await recordTransaction($btn, 64); } },
+                                { text: "取消", className: "default" },
+                            ]
+                        });
+                        break;
+                    case "其他":
+                        $.prompt({
+                            title: "输入金额",
+                            inputType: "number",
+                            onOK: async function (text) {
+                                // 验证输入是否为有效数字
+                                const numberValue = parseFloat(text);
+                                if (isNaN(numberValue) || text.trim() === "") {
+                                    // 输入无效时提示并重新显示输入框                                    
+                                    $.alert("请输入有效的数字", "输入错误");
+                                    return false; // 阻止关闭对话框
+                                }
+                                await recordTransaction($btn, numberValue);
+                            }                        });
+                        break;
+                    default:
+                        const amount = parseInt(text);
+                        const toNickname = $btn.data('to-nickname');
+                        const confirmMessage = `确认要向 ${toNickname || '目标用户'} 转账 ${amount} 元吗？`;
 
-                // 使用jQuery WeUI的确认对话框
-                $.confirm({
-                    title: '确认转账',
-                    text: confirmMessage,
-                    onOK: async function () {
-                        const fromUserId = parseInt($btn.data('from-user-id'));
-                        const toUserId = parseInt($btn.data('to-user-id'));
-                        const gameId = parseInt($btn.data('game-id'));
-
-                        // 按钮状态处理
-                        $btn.prop('disabled', true).css('background-color', '#ccc');
-
-                        try {
-                            const response = await fetch('@Url.Action("RecordTransaction", "Game")', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    GameId: gameId,
-                                    FromUserId: fromUserId,
-                                    ToUserId: toUserId,
-                                    Amount: amount
-                                })
-                            });
-
-                            const result = await response.json();
-
-                            if (!result.success) {
-                                $.toptip('记录失败: ' + (result.message || '未知错误'), 'error');
-                            } else {
-                                $.toptip('记录成功', 'success');
+                        // 使用jQuery WeUI的确认对话框
+                        $.confirm({
+                            title: '确认转账',
+                            text: confirmMessage,
+                            onOK: async function () {
+                                await recordTransaction($btn, amount);
+                            },
+                            onCancel: function () {
+                                // 用户取消操作
+                                return;
                             }
-                        } catch (error) {
-                            console.error('提交失败:', error);
-                            $.toptip('提交失败，请重试', 'error');
-                        } finally {
-                            // 恢复按钮状态
-                            $btn.prop('disabled', false).css('background-color', '');
-                        }
-                    },
-                    onCancel: function () {
-                        // 用户取消操作
-                        return;
-                    }
-                });
+                        });
+                        break;
+                }
             });
+        }
+
+        async function recordTransaction($btn, amount){
+            const fromUserId = parseInt($btn.data('from-user-id'));
+            const toUserId = parseInt($btn.data('to-user-id'));
+            const gameId = parseInt($btn.data('game-id'));
+                        
+            // 按钮状态处理            
+            $btn.prop('disabled', true).css('background-color', '#ccc');
+            
+            try {
+                const response = await fetch('@Url.Action("RecordTransaction", "Game")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        GameId: gameId,
+                        FromUserId: fromUserId,
+                        ToUserId: toUserId,
+                        Amount: amount
+                    })
+                });
+                                                    
+                const result = await response.json();
+                
+                if (!result.success) {
+                    $.toptip('记录失败: ' + (result.message || '未知错误'), 'error');
+                } else {
+                    $.toptip('记录成功', 'success');
+                }                                
+            } catch (error) {
+                console.error('提交失败:', error);                
+                $.toptip('提交失败，请重试', 'error');
+            } finally {
+                // 恢复按钮状态                               
+                $btn.prop('disabled', false).css('background-color', '');                
+            }
         }
 
         // 初始化准备按钮事件

@@ -6,6 +6,7 @@ namespace MahjongAccount.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Type { get; set; } = "川麻"; // 川麻/宝中宝
         public string? Remarks { get; set; }
         public int CreatorId { get; set; }
         public string Status { get; set; } = "ongoing"; // ongoing/ended

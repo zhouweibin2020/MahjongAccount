@@ -95,6 +95,6 @@ BuildOutput/
 # Entity Framework Core 迁移临时文件
 Migrations/
     
-/MahjongAccount/database.db
-/MahjongAccount/database.db-shm
-/MahjongAccount/database.db-wal
+/MahjongAccount/data/database.db
+/MahjongAccount/data/database.db-shm
+/MahjongAccount/data/database.db-wal

@@ -6,7 +6,6 @@ using MahjongAccount.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace MahjongAccount.Controllers
 {
@@ -43,19 +42,29 @@ namespace MahjongAccount.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(string name, string remarks)
+        public async Task<IActionResult> Create(string name, string remarks, string type)
         {
             if (!IsUserLoggedIn())
                 return RedirectToAction("UserSelect", "User");
 
             var creatorId = GetCurrentUserId();
+
+            // 验证牌局类型（限制为预设值）
+            var validTypes = new List<string> { "川麻", "宝中宝" };
+            if (!validTypes.Contains(type))
+            {
+                ModelState.AddModelError("Type", "无效的牌局类型");
+                return View();
+            }
+
             var game = new Game
             {
                 Name = name,
                 Remarks = remarks,
                 CreatorId = creatorId,
                 Status = "ongoing",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                Type = type
             };
 
             _context.Games.Add(game);

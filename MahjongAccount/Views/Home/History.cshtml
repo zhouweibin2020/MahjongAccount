@@ -237,7 +237,7 @@
         <div class="summary-item">
             <div class="summary-label">胜率</div>
             <div class="summary-value">
-                @(totalGames > 0 ? $"{(int)((totalGames - (totalLose > 0 ? 1 : 0)) * 100 / totalGames)}%" : "0%")
+                @(totalGames > 0 ? $"{(int)(totalWin * 100 / totalGames)}%" : "0%")
             </div>
         </div>
     </div>
