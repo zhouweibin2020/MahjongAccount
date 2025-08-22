@@ -11,15 +11,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // 添加SignalR
 builder.Services.AddSignalR(options =>
 {
-    options.ClientTimeoutInterval = TimeSpan.FromMinutes(30); // 延长客户端超时
-    options.KeepAliveInterval = TimeSpan.FromSeconds(15); // 增加心跳频率
-});
-
-// 添加会话支持
-builder.Services.AddSession(options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    // 客户端超时时间（默认30秒，建议延长至5分钟）
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(8);
+    // 心跳包间隔（应小于客户端超时时间，建议2分钟）
+    options.KeepAliveInterval = TimeSpan.FromMinutes(4);
+    // 握手超时时间（默认15秒，复杂环境可延长）
+    options.HandshakeTimeout = TimeSpan.FromMinutes(20);
 });
 
 // Add services to the container.
@@ -50,7 +47,6 @@ app.UseStaticFiles();
 app.UseWebSockets();
 app.UseRouting();
 
-app.UseSession();
 app.UseAuthorization();
 
 app.MapControllerRoute(

@@ -1,4 +1,4 @@
-namespace MahjongAccount.Models
+namespace MahjongAccount.Models.ViewModels
 {
     public class ErrorViewModel
     {

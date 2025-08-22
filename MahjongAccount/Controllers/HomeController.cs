@@ -16,16 +16,15 @@ public class HomeController : Controller
         _context = context;
     }
 
-    // 检查用户是否已选择（通过Session验证，与UserController保持一致）
+    // 检查用户是否登录
     private bool IsUserLoggedIn()
     {
-        return HttpContext.Session.GetInt32("SelectedUserId") != null;
+        return HttpContext.Request.Cookies.Keys.Contains("SelectedUserId");
     }
 
-    // 获取当前选中的用户ID
     private int GetCurrentUserId()
     {
-        return HttpContext.Session.GetInt32("SelectedUserId") ?? 0;
+        return Convert.ToInt32(HttpContext.Request.Cookies["SelectedUserId"]);
     }
 
     // 首页
@@ -42,7 +41,7 @@ public class HomeController : Controller
 
         if (user == null)
         {
-            HttpContext.Session.Remove("SelectedUserId");
+            HttpContext.Response.Cookies.Delete("SelectedUserId");
             return RedirectToAction("UserSelect", "User");
         }
 
@@ -101,7 +100,6 @@ public class HomeController : Controller
 
         // 获取当前用户信息
         var currentUser = await _context.Users.FindAsync(userId);
-        ViewData["CurrentUser"] = currentUser;
 
         // 获取当前用户参与的所有牌局ID
         var gameIdsQuery = _context.GamePlayers
@@ -147,17 +145,19 @@ public class HomeController : Controller
             };
         }).ToList();
 
-        // 传递筛选参数到视图
-        ViewData["StartDate"] = startDate?.ToString("yyyy-MM-dd");
-        ViewData["EndDate"] = endDate?.ToString("yyyy-MM-dd");
+        var historyViewModel = new HistoryViewModel
+        {
+            CurrentUser = currentUser,
+            TotalGames = historyItems.Count,
+            TotalNetResult = historyItems.Sum(item => item.UserNetResult),
+            TotalWin = historyItems.Count(item => item.UserNetResult > 0),
+            TotalLose = historyItems.Count(item => item.UserNetResult < 0),
+            StartDate = startDate,
+            EndDate = endDate,
+            HistoryItems = historyItems
+        };
 
-        // 计算总计
-        ViewData["TotalGames"] = historyItems.Count;
-        ViewData["TotalNetResult"] = historyItems.Sum(item => item.UserNetResult);
-        ViewData["TotalWin"] = historyItems.Count(item => item.UserNetResult > 0);
-        ViewData["TotalLose"] = historyItems.Count(item => item.UserNetResult < 0);
-
-        return View(historyItems);
+        return View(historyViewModel);
     }
 
     // 排行榜页
@@ -366,17 +366,11 @@ public class HomeController : Controller
         return View();
     }
 
-    // 退出登录/切换用户（与Session机制匹配）
+    // 退出登录/切换用户
     public IActionResult Logout()
     {
-        // 清除Session中的用户选择
-        HttpContext.Session.Remove("SelectedUserId");
+        // 清除Cookies中的用户选择
+        HttpContext.Response.Cookies.Delete("SelectedUserId");
         return RedirectToAction("UserSelect", "User");
     }
-}
-
-// 首页视图模型
-public class IndexViewModel
-{
-    public User User { get; set; }
 }

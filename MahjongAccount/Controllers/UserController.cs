@@ -34,7 +34,7 @@ namespace MahjongAccount.Controllers
             // 这里可以实现用户选择逻辑，例如：
             // 1. 记录用户会话
             // 2. 跳转到首页
-            HttpContext.Session.SetInt32("SelectedUserId", userId);
+            HttpContext.Response.Cookies.Append("SelectedUserId", userId.ToString());
             return RedirectToAction("Index", "Home");
         }
 

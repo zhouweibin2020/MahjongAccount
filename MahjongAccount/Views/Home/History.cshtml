@@ -1,16 +1,7 @@
 ﻿@{
     Layout = null;
 }
-@model List< MahjongAccount.Models.ViewModels.HistoryItemViewModel>
-@{
-    var currentUser = ViewData["CurrentUser"] as MahjongAccount.Models.User;
-    var totalGames = (int)ViewData["TotalGames"];
-    var totalNetResult = (int)ViewData["TotalNetResult"];
-    var totalWin = (int)ViewData["TotalWin"];
-    var totalLose = (int)ViewData["TotalLose"];
-    var startDate = ViewData["StartDate"] as string;
-    var endDate = ViewData["EndDate"] as string;
-}
+@model MahjongAccount.Models.ViewModels.HistoryViewModel
 
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -34,40 +25,59 @@
         }
 
         .filter-bar {
-            padding: 10px 15px;
+            padding: 10px;
             background-color: #f5f5f5;
             border-bottom: 1px solid #eee;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .filter-form {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            width: 100%;
+            flex-wrap: nowrap; /* 防止换行 */
         }
 
         .date-input {
-            flex: 1;
-            padding: 8px;
+            flex: 1; /* 让日期输入框平分剩余空间 */
+            min-width: 0; /* 允许输入框在小屏幕上缩小 */
+            padding: 8px !important;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            white-space: nowrap; /* 防止按钮文本换行 */
+        }
+
+        .filter-btn, .reset-btn {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            box-sizing: border-box;
         }
 
         .filter-btn {
-            padding: 8px 15px;
             background-color: #07c160;
             color: white;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
         }
 
         .reset-btn {
-            padding: 8px 15px;
             background-color: #f5f5f5;
             color: #333;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .summary-card {
@@ -216,36 +226,38 @@
 
     <div class="filter-bar">
         <form class="filter-form" asp-action="History" method="get" id="filterForm">
-            <input type="date" name="startDate" class="date-input" value="@startDate" placeholder="开始日期">
-            <input type="date" name="endDate" class="date-input" value="@endDate" placeholder="结束日期">
-            <button type="submit" class="filter-btn">筛选</button>
-            <a href="@Url.Action("History")" class="reset-btn">重置</a>
+            <input type="text" id="startDate" name="startDate" class="date-input" value="@Model.StartDate?.ToString("yyyy/MM/dd")" placeholder="开始日期">
+            <input type="text" id="endDate" name="endDate" class="date-input" value="@Model.EndDate?.ToString("yyyy/MM/dd")" placeholder="结束日期">
+            <div class="filter-actions">
+                <button type="submit" class="filter-btn">筛选</button>
+                <a href="@Url.Action("History")" class="reset-btn">重置</a>
+            </div>
         </form>
     </div>
 
     <div class="summary-card">
         <div class="summary-item">
             <div class="summary-label">总局数</div>
-            <div class="summary-value">@totalGames</div>
+            <div class="summary-value">@Model.TotalGames</div>
         </div>
         <div class="summary-item">
             <div class="summary-label">总计</div>
-            <div class="summary-value @(totalNetResult > 0 ? "positive" : totalNetResult < 0 ? "negative" : "")">
-                @(totalNetResult > 0 ? "+" : "")¥@Math.Abs(totalNetResult)
+            <div class="summary-value @(Model.TotalNetResult > 0 ? "positive" : Model.TotalNetResult < 0 ? "negative" : "")">
+                @(Model.TotalNetResult > 0 ? "+" : "")¥@Math.Abs(Model.TotalNetResult)
             </div>
         </div>
         <div class="summary-item">
             <div class="summary-label">胜率</div>
             <div class="summary-value">
-                @(totalGames > 0 ? $"{(int)(totalWin * 100 / totalGames)}%" : "0%")
+                @(Model.TotalGames > 0 ? $"{(int)(Model.TotalWin * 100 / Model.TotalGames)}%" : "0%")
             </div>
         </div>
     </div>
 
     <div class="history-list">
-        @if (Model != null && Model.Any())
+        @if (Model != null && Model.HistoryItems != null && Model.HistoryItems.Any())
         {
-            foreach (var item in Model)
+            foreach (var item in Model.HistoryItems)
             {
                 <div class="history-item">
                     <div class="history-header">
@@ -307,6 +319,9 @@
     <script>
         // 页面加载完成后初始化
         $(document).ready(function() {
+            $("#startDate").calendar();
+            $("#endDate").calendar();
+
             // 筛选表单提交处理
             $('#filterForm').on('submit', function(e) {
                 const startDate = $('input[name="startDate"]').val();

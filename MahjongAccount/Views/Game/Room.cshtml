@@ -20,180 +20,191 @@
     <script src="~/js/jquery-weui.js"></script>
     <style>
         .weui-tabbar {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
 
         body {
-        padding-bottom: 50px;
-        background-color: #f5f5f5;
-        margin: 0;
-        overflow-x: hidden;
+            padding-bottom: 50px;
+            background-color: #f5f5f5;
+            margin: 0;
+            overflow-x: hidden;
         }
 
         .page-title {
-        text-align: center;
-        padding: 15px 0;
-        font-size: 18px;
-        font-weight: bold;
-        border-bottom: 1px solid #eee;
-        background-color: #fff;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
         }
 
         /* 游戏信息区域样式 */
         .game-info {
-        padding: 10px 15px;
-        background-color: #f5f5f5;
-        font-size: 14px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+            padding: 10px 15px;
+            background-color: #f5f5f5;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .connect-btn {
+            background-color: #09BB07;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            height: 34px; /* 固定高度 */
         }
 
         /* 刷新按钮样式 - 与准备按钮高度一致 */
         .refresh-btn {
-        background-color: #09BB07;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 8px 12px; /* 调整内边距使高度匹配 */
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        height: 34px; /* 固定高度 */
-        box-sizing: border-box;
+            background-color: #09BB07;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px; /* 调整内边距使高度匹配 */
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            height: 34px; /* 固定高度 */
+            box-sizing: border-box;
         }
 
-        .refresh-btn i {
-        margin-right: 5px;
-        font-size: 16px;
-        }
+            .refresh-btn i {
+                margin-right: 5px;
+                font-size: 16px;
+            }
 
-        .refresh-btn:active {
-        background-color: #089606;
-        }
+            .refresh-btn:active {
+                background-color: #089606;
+            }
 
         .players-title {
-        padding: 10px 15px;
-        font-size: 16px;
-        font-weight: 500;
-        border-bottom: 1px solid #eee;
-        background-color: #fff;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
         }
 
         .players-list {
-        display: flex;
-        flex-wrap: wrap;
-        padding: 10px 15px;
-        gap: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px 15px;
+            gap: 15px;
         }
 
         .player-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70px;
         }
 
         .player-avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        margin-bottom: 5px;
-        object-fit: cover;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 5px;
+            object-fit: cover;
         }
 
         .player-name {
-        font-size: 14px;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 100%;
+            font-size: 14px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
 
         .ready-tag {
-        color: #1AAD19;
-        font-size: 12px;
-        margin-top: 2px;
+            color: #1AAD19;
+            font-size: 12px;
+            margin-top: 2px;
         }
 
         .transactions {
-        margin-top: 15px;
-        padding-bottom: 70px;
-        background-color: #fff;
+            margin-top: 15px;
+            padding-bottom: 70px;
+            background-color: #fff;
         }
 
         .transaction-item {
-        padding: 10px 15px;
-        border-bottom: 1px solid #eee;
-        background-color: #fff;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
         }
 
         .transaction-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .amount-win {
-        color: #E64340;
-        font-weight: bold;
+            color: #E64340;
+            font-weight: bold;
         }
 
         .amount-lose {
-        color: #1AAD19;
-        font-weight: bold;
+            color: #1AAD19;
+            font-weight: bold;
         }
 
         .time-stamp {
-        font-size: 12px;
-        color: #999;
-        margin-top: 5px;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
         }
 
         .action-btn {
-        position: fixed;
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        display: flex;
-        gap: 10px;
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            display: flex;
+            gap: 10px;
         }
 
         .other-players {
-        padding: 15px;
-        background-color: #fff;
+            padding: 15px;
+            background-color: #fff;
         }
 
         .other-player-item {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
         }
 
         .player-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-right: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 15px;
         }
 
         .player-name {
-        font-size: 16px;
-        min-width: 60px;
-        text-align: center;
+            font-size: 16px;
+            min-width: 60px;
+            text-align: center;
         }
 
         .player-balance {
-        font-size: 14px;
-        min-width: 60px;
-        text-align: center;
+            font-size: 14px;
+            min-width: 60px;
+            text-align: center;
         }
 
         .player-avatar {
@@ -204,9 +215,9 @@
         }
 
         .amount-buttons {
-        display: flex;
-        gap: 8px;
-        white-space: nowrap;
+            display: flex;
+            gap: 8px;
+            white-space: nowrap;
         }
 
         .amount-btn {
@@ -220,46 +231,56 @@
             color: #000 !important;
         }
 
-        .amount-btn:active {
-        background-color: #e0e0e0;
-        }
+            .amount-btn:active {
+                background-color: #e0e0e0;
+            }
 
         .amount-form {
-        margin: 0;
-        padding: 0;
+            margin: 0;
+            padding: 0;
         }
 
         .current-user-balance {
-        padding: 10px 15px;
-        font-weight: bold;
-        font-size: 16px;
-        background-color: #f5f5f5;
-        border-bottom: 1px solid #eee;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 16px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #eee;
         }
 
         .balance-positive {
-        color: red;
+            color: red;
         }
 
         .balance-negative {
-        color: #1AAD19;
+            color: #1AAD19;
         }
 
         .balance-zero {
-        color: #000;
+            color: #000;
         }
 
         .flow-view-indicator {
-        padding: 8px 15px;
-        background-color: #fff8e6;
-        color: #ff9800;
-        font-size: 14px;
-        text-align: center;
-        border-bottom: 1px solid #ffe0b2;
+            padding: 8px 15px;
+            background-color: #fff8e6;
+            color: #ff9800;
+            font-size: 14px;
+            text-align: center;
+            border-bottom: 1px solid #ffe0b2;
         }
 
         .current-user {
-        background-color: #C8DCFA;
+            background-color: #C8DCFA;
+        }
+
+        .signalr-connected {
+            color: #1AAD19 !important;
+            font-weight: bold;
+        }
+
+        .signalr-disconnection {
+            color: #E64340 !important;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -282,7 +303,12 @@
         {
             <div class="page-title">牌局 #@Model.Game.Id 《@Model.Game.Name》</div>
             <div class="game-info">
-                <span>开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                <span>开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                    <span id="signalrState" style="margin-left: 10px;"></span>
+                    <button type="button" class="connect-btn" id="signalr-connect" style="display: none;">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </span>
                 <button type="button" class="refresh-btn" id="manualRefreshBtn">
                     <i class="fa fa-refresh"></i>
                     <span>刷新</span>
@@ -294,7 +320,7 @@
                     <div class="current-user-balance">
                         你的结余:
                         <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
-                        class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
+                              class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
                     Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
                             ¥@Model.PlayerBalances[Model.CurrentUserId]
                         </span>
@@ -325,7 +351,7 @@
                                     <div class="other-player-item">
                                         <img src="@(player.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(player.Avatar)}" :
                         $"https://picsum.photos/60/60?random={player.Id}")" alt="@player.Nickname 的头像"
-                                        class="player-avatar">
+                                             class="player-avatar">
 
                                         <div class="player-info">
                                             <div class="player-name">
@@ -439,108 +465,184 @@
         $(document).ready(function() {
             // 从Model初始化当前已在房间的玩家ID集合
             const initialPlayerIds = new Set();
-            @foreach (var player in Model.Players)
-            {
-                @:initialPlayerIds.add(@player.Id);
-            }
+        @foreach (var player in Model.Players)
+        {
+            @:initialPlayerIds.add(@player.Id);
+        }
 
-            // 初始化手动刷新按钮事件
+            // 初始化按钮事件
             initRefreshButton();
+
+            // 全局SignalR连接状态管理
+            let isConnecting = false;  // 防止重复连接的标记
+            let connection;
+            let reconnectDelay = 1000; // 初始重连延迟（毫秒）
+            const maxReconnectDelay = 30000; // 最大重连延迟（30秒）
 
             if (`@Model.Game.Status` === 'ongoing') {
                 // 1. 初始化SignalR连接
-                const connection = new signalR.HubConnectionBuilder()
-                    .withUrl("/gameHub")
-                    .configureLogging(signalR.LogLevel.Information)
-                    .build();
+                function initConnection() {
+                    if (!connection) {
+                        connection = new signalR.HubConnectionBuilder()
+                            .withUrl("/gameHub")
+                            .configureLogging(signalR.LogLevel.Information)
+                            .build();
 
-                // 2. 注册服务器推送事件的处理函数
-                connection.on("NewTransaction", (data) => {
-                    try {
-                        if (data.gameId === @Model.Game.Id) {
-                            // 更新输家金额
-                            var $currentUserBalance = $(`#balance_${data.fromUserId}`);
-                            var currentBalance = parseInt($currentUserBalance.attr('data-amount'));
-                            currentBalance -= data.amount;
-                            $currentUserBalance.attr('data-amount', currentBalance)
-                                               .text(`¥${currentBalance}`)
-                                               .removeClass('balance-positive balance-negative balance-zero')
-                                               .addClass(currentBalance > 0 ? 'balance-positive' :
-                                                        currentBalance < 0 ? 'balance-negative' : 'balance-zero');
+                        // 2. 注册服务器推送事件的处理函数
+                        connection.on("NewTransaction", (data) => {
+                            try {
+                                if (data.gameId === @Model.Game.Id) {
+                                    // 更新输家金额
+                                    var $currentUserBalance = $(`#balance_${data.fromUserId}`);
+                                    var currentBalance = parseInt($currentUserBalance.attr('data-amount'));
+                                    currentBalance -= data.amount;
+                                    $currentUserBalance.attr('data-amount', currentBalance)
+                                                       .text(`¥${currentBalance}`)
+                                                       .removeClass('balance-positive balance-negative balance-zero')
+                                                       .addClass(currentBalance > 0 ? 'balance-positive' :
+                                                                currentBalance < 0 ? 'balance-negative' : 'balance-zero');
 
-                            // 更新赢家金额
-                            var $toUserBalance = $(`#balance_${data.toUserId}`);
-                            var toBalance = parseInt($toUserBalance.attr('data-amount'));
-                            toBalance += data.amount;
-                            $toUserBalance.attr('data-amount', toBalance)
-                                          .text(`¥${toBalance}`)
-                                          .removeClass('balance-positive balance-negative balance-zero')
-                                          .addClass(toBalance > 0 ? 'balance-positive' :
-                                                   toBalance < 0 ? 'balance-negative' : 'balance-zero');
+                                    // 更新赢家金额
+                                    var $toUserBalance = $(`#balance_${data.toUserId}`);
+                                    var toBalance = parseInt($toUserBalance.attr('data-amount'));
+                                    toBalance += data.amount;
+                                    $toUserBalance.attr('data-amount', toBalance)
+                                                  .text(`¥${toBalance}`)
+                                                  .removeClass('balance-positive balance-negative balance-zero')
+                                                  .addClass(toBalance > 0 ? 'balance-positive' :
+                                                           toBalance < 0 ? 'balance-negative' : 'balance-zero');
 
-                            // 刷新交易列表
-                            refreshTransactions();
-                        }
-                    } catch (err) {
-                        console.error("NewTransaction刷新失败:", err);
-                        $.toptip('刷新记账失败', 'error', 2000);
+                                    // 刷新交易列表
+                                    refreshTransactions();
+                                }
+                            } catch (err) {
+                                console.error("NewTransaction刷新失败:", err);
+                                $.toptip('刷新记账失败', 'error', 2000);
+                            }
+                        });
+
+                        connection.on("ReadyStatusChanged", (data) => {
+                            if (data.gameId === @Model.Game.Id) {
+                                const statusHtml = `准备状态: ${data.readyCount}/${data.totalPlayers} 人已准备
+                                                    ${data.readyCount < data.totalPlayers ?
+                                                        '<span style="color: #999;">（所有人准备后自动结束牌局）</span>' : ''}`;
+                                $('.ready-status').html(statusHtml);
+
+                                // 所有人准备好则跳转结果页
+                                if (data.readyCount === data.totalPlayers && data.readyCount > 0) {
+                                    setTimeout(() => {
+                                        window.location.href = `@Url.Action("Result", "Game", new { gameId = Model.Game.Id })`;
+                                    }, 1000);
+                                }
+                            }
+                        });
+
+                        connection.on("UserJoined", (data) => {
+                            if (data.gameId === @Model.Game.Id) {
+                                // 检查用户是否是新加入的（不在初始玩家列表中）
+                                if (!initialPlayerIds.has(data.userId)) {
+                                    // 显示顶部提示
+                                    $.toptip(data.message, 'success', 3000);
+                                    // 将新用户添加到集合中，避免重复通知
+                                    initialPlayerIds.add(data.userId);
+
+                                    // 刷新玩家列表
+                                    refreshPlayers();
+                                }
+                            }
+                        });
+
+                        // 连接关闭时自动重连（指数退避策略）
+                        connection.onclose(async (error) => {
+                            $('#signalrState').text('连接断开');
+                            $('#signalr-connect').show();
+                            $('#signalrState').removeClass('signalr-connected').addClass('signalr-disconnection');
+                            await new Promise(resolve => setTimeout(resolve, reconnectDelay));
+                            // 重连延迟指数增长（避免频繁重试）
+                            reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
+                            await startConnection(); // 递归重连
+                        });
                     }
-                });
+                    return connection;
+                }
 
-                connection.on("ReadyStatusChanged", (data) => {
-                    if (data.gameId === @Model.Game.Id) {
-                        const statusHtml = `准备状态: ${data.readyCount}/${data.totalPlayers} 人已准备
-                                            ${data.readyCount < data.totalPlayers ?
-                                                '<span style="color: #999;">（所有人准备后自动结束牌局）</span>' : ''}`;
-                        $('.ready-status').html(statusHtml);
-
-                        // 所有人准备好则跳转结果页
-                        if (data.readyCount === data.totalPlayers && data.readyCount > 0) {
-                            setTimeout(() => {
-                                window.location.href = `@Url.Action("Result", "Game", new { gameId = Model.Game.Id })`;
-                            }, 1000);
-                        }
-                    }
-                });
-
-                connection.on("UserJoined", (data) => {
-                    if (data.gameId === @Model.Game.Id) {
-                        // 检查用户是否是新加入的（不在初始玩家列表中）
-                        if (!initialPlayerIds.has(data.userId)) {
-                            // 显示顶部提示
-                            $.toptip(data.message, 'success', 3000);
-                            // 将新用户添加到集合中，避免重复通知
-                            initialPlayerIds.add(data.userId);
-                        }
-
-                        // 刷新玩家列表
-                        refreshPlayers();
-                    }
-                });
-
-
-                // 3. 启动SignalR连接
+                // 3. 启动SignalR连接（添加状态检查）
                 async function startConnection() {
+                    // 确保连接实例已初始化
+                    initConnection();
+
+                    // 关键：检查当前连接状态，避免重复启动
+                    if (connection.state === "Connected") {
+                        console.log("SignalR已处于连接状态，无需重复启动");
+                        return;
+                    }
+                    if (isConnecting) {
+                        console.log("SignalR正在连接中，请等待...");
+                        return;
+                    }
+
                     try {
-                        await connection.start();
-                        console.log("SignalR连接成功");
-                        await connection.invoke("JoinGame", @Model.Game.Id, @Model.CurrentUserId);
+                        isConnecting = true; // 标记为正在连接
+                        await connection.start()
+                            .then(() => {
+                                console.log("SignalR连接成功");
+                                $('#signalrState').text('连接正常');
+                                $('#signalr-connect').hide();
+                                $('#signalrState').removeClass('signalr-disconnection').addClass('signalr-connected');
+                                reconnectDelay = 1000; // 重置重连延迟
+                                return connection.invoke("JoinGame", @Model.Game.Id, @Model.CurrentUserId);
+                            })
+                            .catch(err => {
+                                throw err;
+                            });
                     } catch (err) {
+                        $('#signalrState').text('连接异常');
+                        $('#signalr-connect').show();
+                        $('#signalrState').removeClass('signalr-connected').addClass('signalr-disconnection');
                         console.error("SignalR连接失败:", err);
-                        $.toptip('连接失败，正在重试', 'error', 3000);
-                        setTimeout(startConnection, 5000);
+                        $.toptip('连接失败，正在重试', 'error', 2000);
+                    } finally {
+                        isConnecting = false; // 重置连接状态
                     }
                 }
-                // 连接关闭时自动重连
-                connection.onclose(async () => {
-                    await startConnection();
-                });
 
+                // 启动连接
                 startConnection();
+
+                function initConnectButton() {
+                    const $connectBtn = $('#signalr-connect');
+
+                    $connectBtn.on('click', async function() {
+                        // 防止重复点击
+                        if ($connectBtn.hasClass('loading')) {
+                            return;
+                        }
+
+                        // 显示加载状态 - 使用Font Awesome的fa-spin类
+                        $connectBtn.addClass('loading');
+                        const originalIcon = $connectBtn.find('i').attr('class');
+                        $connectBtn.find('i').attr('class', 'fa fa-spinner fa-spin');
+
+                        try {
+                            // 执行连接操作
+                            startConnection();
+                        } catch (error) {
+                            console.error('连接失败:', error);
+                        } finally {
+                            // 恢复按钮状态
+                            $connectBtn.removeClass('loading');
+                            $connectBtn.find('i').attr('class', originalIcon);
+                        }
+                    });
+                }
+
+                initConnectButton();
 
                 // 4. 页面关闭时断开连接
                 window.addEventListener("beforeunload", () => {
-                    connection.stop();
+                    if (connection && connection.state === "Connected") {
+                        connection.stop();
+                    }
                 });
             }
 
@@ -551,7 +653,7 @@
             initReadyButton();
         });
 
-        // 初始化刷新按钮事件
+        // 初始化事件
         function initRefreshButton() {
             const $refreshBtn = $('#manualRefreshBtn');
 
@@ -692,7 +794,7 @@
                                 // 验证输入是否为有效数字
                                 const numberValue = parseFloat(text);
                                 if (isNaN(numberValue) || text.trim() === "") {
-                                    // 输入无效时提示并重新显示输入框                                    
+                                    // 输入无效时提示并重新显示输入框
                                     $.alert("请输入有效的数字", "输入错误");
                                     return false; // 阻止关闭对话框
                                 }
@@ -725,10 +827,10 @@
             const fromUserId = parseInt($btn.data('from-user-id'));
             const toUserId = parseInt($btn.data('to-user-id'));
             const gameId = parseInt($btn.data('game-id'));
-                        
-            // 按钮状态处理            
+
+            // 按钮状态处理
             $btn.prop('disabled', true).css('background-color', '#ccc');
-            
+
             try {
                 const response = await fetch('@Url.Action("RecordTransaction", "Game")', {
                     method: 'POST',
@@ -740,20 +842,20 @@
                         Amount: amount
                     })
                 });
-                                                    
+
                 const result = await response.json();
-                
+
                 if (!result.success) {
                     $.toptip('记录失败: ' + (result.message || '未知错误'), 'error');
                 } else {
                     $.toptip('记录成功', 'success');
-                }                                
+                }
             } catch (error) {
-                console.error('提交失败:', error);                
+                console.error('提交失败:', error);
                 $.toptip('提交失败，请重试', 'error');
             } finally {
-                // 恢复按钮状态                               
-                $btn.prop('disabled', false).css('background-color', '');                
+                // 恢复按钮状态
+                $btn.prop('disabled', false).css('background-color', '');
             }
         }
 
@@ -764,7 +866,7 @@
                 $('#readyButton').off('click').on('click', function() {
                     window.location.href = `@Url.Action("Result", "Game", new { gameId = Model.Game.Id })`;
                 });
-            } 
+            }
             else
             {
                 $('#readyButton').off('click').on('click', async function() {

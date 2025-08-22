@@ -85,9 +85,8 @@
                     <div class="weui-cell">
                         <div class="weui-cell__hd"><label class="weui-label">牌局类型</label></div>
                         <div class="weui-cell__bd">
-                            <input type="text" class="weui-input" id="gameTypeInput" readonly
+                            <input type="text" class="weui-input" id="gameTypeValue" name="type" readonly
                                    placeholder="请选择牌局类型" value="川麻">
-                            <input type="hidden" name="type" id="gameTypeValue" value="川麻">
                         </div>
                     </div>
 
@@ -126,7 +125,7 @@
     <script>
         // 确保DOM加载完成后执行
         $(document).ready(function() {
-            $("#gameTypeInput").select({
+            $("#gameTypeValue").select({
               title: "选择牌局类型",
               items: ["川麻", "宝中宝"]
             });
