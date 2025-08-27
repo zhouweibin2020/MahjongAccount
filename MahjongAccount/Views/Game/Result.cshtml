@@ -232,7 +232,7 @@
                 @foreach (var result in Model.Results)
                 {
                     <div class="player-result-item @(result.UserId == Model.CurrentUserResult?.UserId ? "current-user" : "")">
-                        <img src="@(result.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(result.Avatar)}" :
+                        <img src="@(!string.IsNullOrEmpty(result.AvatarUrl) ? result.AvatarUrl :
                                   $"https://picsum.photos/50/50?random={result.UserId}")"
                              alt="@result.Nickname 的头像" class="player-avatar">
 
@@ -259,7 +259,7 @@
                     {
                         <div class="settlement-item @(st.ToUserId == Model.CurrentUserResult?.UserId || st.FromUserId == Model.CurrentUserResult?.UserId ? "current-user" : "")">
                             <div style="display: flex; align-items: center;">
-                                <img src="@(st.FromAvatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(st.FromAvatar)}" :
+                                <img src="@(!string.IsNullOrEmpty(st.FromAvatarUrl) ? st.FromAvatarUrl :
                                       $"https://picsum.photos/40/40?random={st.FromUserId}")"
                                      alt="@st.FromNickname 的头像" style="width: 40px; height: 40px; border-radius: 50%;">
                                 <span style="margin-left: 5px;">@st.FromNickname</span>
@@ -270,7 +270,7 @@
                             </div>
 
                             <div style="display: flex; align-items: center;">
-                                <img src="@(st.ToAvatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(st.ToAvatar)}" :
+                                <img src="@(!string.IsNullOrEmpty(st.ToAvatarUrl) ? st.ToAvatarUrl :
                                       $"https://picsum.photos/40/40?random={st.ToUserId}")"
                                      alt="@st.ToNickname 的头像" style="width: 40px; height: 40px; border-radius: 50%;">
                                 <span style="margin-left: 5px;">@st.ToNickname</span>

@@ -18,7 +18,12 @@
         /// <summary>
         /// 用户头像（Base64）
         /// </summary>
-        public byte[] Avatar { get; set; }
+        public string AvatarUrl { get; set; }
+
+        /// <summary>
+        /// 玩家方位：东、南、西、北
+        /// </summary>
+        public string Direction { get; set; }
 
         /// <summary>
         /// 是否准备结束牌局

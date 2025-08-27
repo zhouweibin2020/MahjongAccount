@@ -10,6 +10,11 @@ namespace MahjongAccount.Models
         public string? Remarks { get; set; }
         public int CreatorId { get; set; }
         public string Status { get; set; } = "ongoing"; // ongoing/ended
+
+        /// <summary>
+        /// 开局方位：东、南、西、北
+        /// </summary>
+        public string BeginDirection { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? EndedAt { get; set; }
 

@@ -130,9 +130,9 @@
 
                 <div class="avatar-preview-container @(ViewData.ModelState.ContainsKey("Avatar") ? "avatar-required" : "")">
                     <div class="avatar-preview">
-                        @if (Model.Avatar != null)
+                        @if (!string.IsNullOrEmpty(Model.AvatarUrl))
                         {
-                            <img id="preview" src="data:image/jpeg;base64,@Convert.ToBase64String(Model.Avatar)"
+                            <img id="preview" src="@Model.AvatarUrl"
                                  alt="当前头像" style="display: block;">
                             <i class="fa fa-user" style="font-size: 40px; color: #999; display: none;"></i>
                             <div class="current-avatar-hint">点击上传可更换头像</div>

@@ -23,7 +23,7 @@
         /// <summary>
         /// 用户头像
         /// </summary>
-        public byte[] Avatar { get; set; }
+        public string AvatarUrl { get; set; }
 
         /// <summary>
         /// 总积分/总赢金额

@@ -8,10 +8,12 @@ namespace MahjongAccount.Controllers
     public class UserController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<UserController> _logger; // 日志服务
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, ILogger<UserController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // 用户选择页面
@@ -60,6 +62,13 @@ namespace MahjongAccount.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrUpdate(int? id, string nickname, IFormFile? avatar)
         {
+            // 确保头像文件夹存在
+            var avatarFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatar");
+            if (!Directory.Exists(avatarFolder))
+            {
+                Directory.CreateDirectory(avatarFolder);
+            }
+
             User user;
             if (id.HasValue)
             {
@@ -102,11 +111,37 @@ namespace MahjongAccount.Controllers
             // 处理头像上传（如果有新头像则更新）
             if (avatar != null && avatar.Length > 0)
             {
-                using (var memoryStream = new MemoryStream())
+                // 生成唯一文件名（避免重名）
+                var fileExtension = Path.GetExtension(avatar.FileName).ToLowerInvariant();
+                var fileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(avatarFolder, fileName);
+
+                // 保存文件到服务器
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-                    await avatar.CopyToAsync(memoryStream);
-                    user.Avatar = memoryStream.ToArray();
+                    await avatar.CopyToAsync(stream);
                 }
+
+                // 删除旧头像（如果是更新操作且存在旧头像）
+                if (id.HasValue && !string.IsNullOrEmpty(user.AvatarUrl))
+                {
+                    var oldFilePath = Path.Combine(avatarFolder, Path.GetFileName(user.AvatarUrl));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            // 记录删除旧文件失败的日志
+                            _logger.LogWarning(ex, "删除旧头像文件失败: {FilePath}", oldFilePath);
+                        }
+                    }
+                }
+
+                // 保存相对路径到数据库（便于前端访问）
+                user.AvatarUrl = $"/avatar/{fileName}";
             }
             // 如果是更新且没有上传新头像，则保留原有头像
 
@@ -124,6 +159,7 @@ namespace MahjongAccount.Controllers
 
             return RedirectToAction("UserSelect");
         }
+
 
         // 添加用户更新事件处理方法
         private void OnUserUpdated(User user)

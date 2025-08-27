@@ -158,8 +158,8 @@
 <body>
     <div class="user-info">
         <div class="user-main">
-            <img src="@(Model.User.Avatar != null
-                ? $"data:image/jpeg;base64,{Convert.ToBase64String(Model.User.Avatar)}"
+            <img src="@(!string.IsNullOrEmpty(Model.User.AvatarUrl)
+                 ? Model.User.AvatarUrl
                 : $"https://picsum.photos/60/60?random={Model.User.Id}")"
                  alt="@Model.User.Nickname 的头像" class="user-avatar">
             <div>

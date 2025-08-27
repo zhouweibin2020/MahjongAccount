@@ -8,17 +8,17 @@
         /// <summary>
         /// 总赢金额
         /// </summary>
-        public decimal TotalWin { get; set; }
+        public int TotalWin { get; set; }
 
         /// <summary>
         /// 总输金额
         /// </summary>
-        public decimal TotalLose { get; set; }
+        public int TotalLose { get; set; }
 
         /// <summary>
         /// 净结果（赢-输）
         /// </summary>
-        public decimal NetResult { get; set; }
+        public int NetResult { get; set; }
 
         /// <summary>
         /// 玩家昵称
@@ -28,7 +28,7 @@
         /// <summary>
         /// 玩家头像
         /// </summary>
-        public byte[] Avatar { get; set; }
+        public string AvatarUrl { get; set; }
 
         /// <summary>
         /// 玩家ID

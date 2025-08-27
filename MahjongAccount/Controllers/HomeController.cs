@@ -223,13 +223,13 @@ public class HomeController : Controller
                 (gr, user) => new { gr, user }
             )
             .Where(x => !startDate.HasValue || x.gr.Game.CreatedAt >= startDate)
-            .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.Avatar })
+            .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.AvatarUrl })
             .Select(g => new UserRankingDto
             {
                 UserId = g.Key.Id,
                 IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
-                Avatar = g.Key.Avatar,
+                AvatarUrl = g.Key.AvatarUrl,
                 TotalPoints = g.Sum(x => x.gr.NetResult),
                 GameCount = g.Select(x => x.gr.GameId).Distinct().Count()  // 增加参与局数
             })
@@ -250,13 +250,13 @@ public class HomeController : Controller
                 (gr, user) => new { gr, user }
             )
             .Where(x => !startDate.HasValue || x.gr.Game.CreatedAt >= startDate)
-            .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.Avatar })
+            .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.AvatarUrl })
             .Select(g => new UserRankingDto
             {
                 UserId = g.Key.Id,
                 IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
-                Avatar = g.Key.Avatar,
+                AvatarUrl = g.Key.AvatarUrl,
                 GameCount = g.Count(x => x.gr.NetResult > 0)
             })
             .OrderByDescending(x => x.GameCount)
@@ -291,7 +291,7 @@ public class HomeController : Controller
             {
                 x.user.Id,
                 x.user.Nickname,
-                x.user.Avatar,
+                x.user.AvatarUrl,
                 Date = x.gr.Game.CreatedAt.Date  // 按日期分组
             })
             .Where(g => isTop
@@ -302,7 +302,7 @@ public class HomeController : Controller
                 UserId = g.Key.Id,
                 IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
-                Avatar = g.Key.Avatar,
+                AvatarUrl = g.Key.AvatarUrl,
                 Period = g.Key.Date.ToString("yyyy-MM-dd"),
                 TotalResult = g.Sum(x => x.gr.NetResult)
             })
@@ -338,7 +338,7 @@ public class HomeController : Controller
             {
                 x.user.Id,
                 x.user.Nickname,
-                x.user.Avatar,
+                x.user.AvatarUrl,
                 Month = new DateTime(x.gr.Game.CreatedAt.Year, x.gr.Game.CreatedAt.Month, 1)  // 按月份分组
             })
             .Where(g => isTop
@@ -349,7 +349,7 @@ public class HomeController : Controller
                 UserId = g.Key.Id,
                 IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
-                Avatar = g.Key.Avatar,
+                AvatarUrl = g.Key.AvatarUrl,
                 Period = g.Key.Month.ToString("yyyy-MM"),
                 TotalResult = g.Sum(x => x.gr.NetResult)
             })

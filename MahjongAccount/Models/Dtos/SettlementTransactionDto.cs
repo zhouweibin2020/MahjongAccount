@@ -8,7 +8,7 @@
         /// <summary>
         /// 转账金额
         /// </summary>
-        public decimal Amount { get; set; }
+        public int Amount { get; set; }
 
         /// <summary>
         /// 付款方昵称
@@ -23,12 +23,12 @@
         /// <summary>
         /// 付款方头像
         /// </summary>
-        public byte[] FromAvatar { get; set; }
+        public string FromAvatarUrl { get; set; }
 
         /// <summary>
         /// 收款方头像
         /// </summary>
-        public byte[] ToAvatar { get; set; }
+        public string ToAvatarUrl { get; set; }
 
         /// <summary>
         /// 付款方ID

@@ -67,6 +67,7 @@ namespace MahjongAccount.Controllers
                     Remarks = remarks,
                     CreatorId = creatorId,
                     Status = "ongoing",
+                    BeginDirection = GetRandomDirection(), // 随机分配一个开局方位
                     CreatedAt = DateTime.Now,
                     Type = type
                 };
@@ -79,6 +80,7 @@ namespace MahjongAccount.Controllers
                 {
                     GameId = game.Id,
                     UserId = creatorId,
+                    Direction = GetRandomDirection(), // 创建者随机分配一个方向
                     JoinedAt = DateTime.Now
                 });
                 await _context.SaveChangesAsync();
@@ -91,6 +93,39 @@ namespace MahjongAccount.Controllers
                 ModelState.AddModelError(string.Empty, "创建牌局失败，请重试");
                 return View();
             }
+        }
+
+        // 定义所有可能的方向
+        private readonly List<string> _allDirections = new List<string> { "东", "西", "南", "北" };
+
+        /// <summary>
+        /// 从东西南北中随机选择一个未被选中的方向
+        /// </summary>
+        /// <param name="selectedDirections">已选的方向列表</param>
+        /// <returns>随机选中的方向，如果所有方向都已被选则返回null</returns>
+        public string GetRandomDirection(List<string> selectedDirections = null)
+        {
+            // 校验输入参数，避免空引用异常
+            if (selectedDirections == null)
+            {
+                selectedDirections = new List<string>();
+            }
+
+            // 筛选出未被选中的方向
+            var availableDirections = _allDirections
+                .Where(d => !selectedDirections.Contains(d, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            // 如果没有可用方向，返回null
+            if (availableDirections.Count == 0)
+            {
+                return null;
+            }
+
+            // 随机选择一个可用方向
+            var random = new Random();
+            int index = random.Next(availableDirections.Count);
+            return availableDirections[index];
         }
 
         // 获取进行中的牌局
@@ -151,11 +186,14 @@ namespace MahjongAccount.Controllers
                 if (isAlreadyJoined)
                     return RedirectToAction("Room", new { gameId });
 
+                var selected = _context.GamePlayers.Where(f => f.GameId == gameId).Select(f => f.Direction).ToList();
+
                 // 添加用户到牌局
                 _context.GamePlayers.Add(new GamePlayer
                 {
                     GameId = gameId,
                     UserId = userId,
+                    Direction = GetRandomDirection(selected),
                     JoinedAt = DateTime.Now
                 });
                 await _context.SaveChangesAsync();
@@ -201,7 +239,8 @@ namespace MahjongAccount.Controllers
                     {
                         Id = gp.UserId,
                         Nickname = gp.User.Nickname,
-                        Avatar = gp.User.Avatar,
+                        AvatarUrl = gp.User.AvatarUrl,
+                        Direction = gp.Direction,
                         IsReady = gp.IsReady,
                         IsCreator = gp.UserId == game.CreatorId
                     })
@@ -444,7 +483,7 @@ namespace MahjongAccount.Controllers
                 if (currentUser != null)
                 {
                     currentUserResult.Nickname = currentUser.Nickname;
-                    currentUserResult.Avatar = currentUser.Avatar;
+                    currentUserResult.AvatarUrl = currentUser.AvatarUrl;
                 }
 
                 // 所有玩家结果
@@ -460,7 +499,7 @@ namespace MahjongAccount.Controllers
                             TotalLose = gr.TotalLose,
                             NetResult = gr.NetResult,
                             Nickname = user.Nickname,
-                            Avatar = user.Avatar,
+                            AvatarUrl = user.AvatarUrl,
                             UserId = user.Id
                         }
                     )
@@ -484,8 +523,8 @@ namespace MahjongAccount.Controllers
                             Amount = tf.st.Amount,
                             FromNickname = tf.fromUser.Nickname,
                             ToNickname = toUser.Nickname,
-                            FromAvatar = tf.fromUser.Avatar,
-                            ToAvatar = toUser.Avatar,
+                            FromAvatarUrl = tf.fromUser.AvatarUrl,
+                            ToAvatarUrl = toUser.AvatarUrl,
                             FromUserId = tf.fromUser.Id,
                             ToUserId = toUser.Id
                         }

@@ -100,8 +100,8 @@
             foreach (var user in Model)
             {
                 <a href="@Url.Action("ChooseUser", "User", new { userId = user.Id })" class="user-item">
-                    <img src="@(user.Avatar != null
-                        ? $"data:image/jpeg;base64,{Convert.ToBase64String(user.Avatar)}"
+                    <img src="@(!string.IsNullOrEmpty(user.AvatarUrl)
+                        ? user.AvatarUrl
                         : $"https://picsum.photos/50/50?random={user.Id}")"
                          alt="@user.Nickname 的头像" class="user-avatar">
                     <div class="user-info">

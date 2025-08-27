@@ -282,6 +282,10 @@
             color: #E64340 !important;
             font-weight: bold;
         }
+
+        .direction {
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -301,7 +305,7 @@
         }
         else
         {
-            <div class="page-title">牌局 #@Model.Game.Id 《@Model.Game.Name》</div>
+            <div class="page-title"><span class="direction">【@Model.Game.BeginDirection】</span> #@Model.Game.Id 《@Model.Game.Name》</div>
             <div class="game-info">
                 <span>开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
                     <span id="signalrState" style="margin-left: 10px;"></span>
@@ -318,6 +322,7 @@
                 @if (Model.PlayerBalances.ContainsKey(Model.CurrentUserId))
                 {
                     <div class="current-user-balance">
+                        <span class="direction">@Model.CurrentUser.Direction-</span>
                         你的结余:
                         <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
                               class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
@@ -349,12 +354,13 @@
                                 foreach (var player in otherPlayers)
                                 {
                                     <div class="other-player-item">
-                                        <img src="@(player.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(player.Avatar)}" :
+                                        <img src="@(!string.IsNullOrEmpty(player.AvatarUrl) ? player.AvatarUrl :
                         $"https://picsum.photos/60/60?random={player.Id}")" alt="@player.Nickname 的头像"
                                              class="player-avatar">
 
                                         <div class="player-info">
                                             <div class="player-name">
+                                                <span class="direction">@player.Direction-</span>
                                                 @player.Nickname
                                             </div>
                                             <div id="balance_@player.Id" data-amount="@Model.PlayerBalances[player.Id]" class="player-balance @(Model.PlayerBalances.ContainsKey(player.Id) ?

@@ -20,7 +20,7 @@
         /// <summary>
         /// 用户头像
         /// </summary>
-        public byte[] Avatar { get; set; }
+        public string AvatarUrl { get; set; }
 
         /// <summary>
         /// 日期

@@ -2,35 +2,83 @@ using MahjongAccount.Data;
 using MahjongAccount.Hubs;
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using System.IO;
+
+// 配置Serilog日志
+var logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "Logs");
+if (!Directory.Exists(logDirectory))
+{
+    Directory.CreateDirectory(logDirectory);
+}
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Warning()
+    .Enrich.FromLogContext()
+    .WriteTo.File(
+        Path.Combine(logDirectory, "mahjong-.log"),
+        rollingInterval: RollingInterval.Day,
+        fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB
+        retainedFileCountLimit: 30,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+    )
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// 添加数据库上下文
+// 配置日志
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
+
+
+// 添加数据库上下文 - MySQL
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=data/database.db"));
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("MySqlConnection"),
+        new MySqlServerVersion(new Version(8, 0, 23))
+    )
+    .EnableSensitiveDataLogging(false) // 生产环境禁用敏感数据日志
+    .EnableDetailedErrors(false) // 生产环境禁用详细错误
+);
 
 // 添加SignalR
 builder.Services.AddSignalR(options =>
 {
-    // 客户端超时时间（默认30秒，建议延长至5分钟）
-    options.ClientTimeoutInterval = TimeSpan.FromMinutes(8);
-    // 心跳包间隔（应小于客户端超时时间，建议2分钟）
-    options.KeepAliveInterval = TimeSpan.FromMinutes(4);
-    // 握手超时时间（默认15秒，复杂环境可延长）
-    options.HandshakeTimeout = TimeSpan.FromMinutes(20);
+    // 客户端超时时间（默认8分钟）
+    var clientTimeout = TimeSpan.FromMinutes(8);
+    if (TimeSpan.TryParse(builder.Configuration["SignalR:ClientTimeoutInterval"], out var configClientTimeout))
+    {
+        clientTimeout = configClientTimeout;
+    }
+    options.ClientTimeoutInterval = clientTimeout;
+
+    // 心跳包间隔（默认4分钟）
+    var keepAliveInterval = TimeSpan.FromMinutes(4);
+    if (TimeSpan.TryParse(builder.Configuration["SignalR:KeepAliveInterval"], out var configKeepAlive))
+    {
+        keepAliveInterval = configKeepAlive;
+    }
+    options.KeepAliveInterval = keepAliveInterval;
+
+    // 握手超时时间（默认20分钟）
+    var handshakeTimeout = TimeSpan.FromMinutes(20);
+    if (TimeSpan.TryParse(builder.Configuration["SignalR:HandshakeTimeout"], out var configHandshake))
+    {
+        handshakeTimeout = configHandshake;
+    }
+    options.HandshakeTimeout = handshakeTimeout;
 });
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
-
-// 初始化数据库
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    context.Database.EnsureCreated();
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -55,5 +103,22 @@ app.MapControllerRoute(
 
 // SignalR路由
 app.MapHub<GameHub>("/gameHub");
+
+// 初始化数据库
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // 确保数据库已创建
+        var context = services.GetRequiredService<AppDbContext>();
+        await context.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
 
 app.Run();

@@ -9,7 +9,8 @@ namespace MahjongAccount.Models
         [Required]
         public string Nickname { get; set; }
 
-        public byte[] Avatar { get; set; }
+        [Required]
+        public string AvatarUrl { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }

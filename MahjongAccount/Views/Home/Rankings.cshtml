@@ -293,7 +293,7 @@
                                 @rank
                             </div>
                             <div class="user-info">
-                                <img src="@(user.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(user.Avatar)}" :
+                                <img src="@(!string.IsNullOrEmpty(user.AvatarUrl) ? user.AvatarUrl :
                                           $"https://picsum.photos/40/40?random={user.UserId}")"
                                      alt="@user.Nickname 的头像" class="user-avatar">
                                 <div class="user-name">@user.Nickname</div>
@@ -352,7 +352,7 @@
                                 @rank
                             </div>
                             <div class="user-info">
-                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" :
+                                <img src="@(!string.IsNullOrEmpty(item.AvatarUrl) ? item.AvatarUrl :
                                           $"https://picsum.photos/40/40?random={item.UserId}")"
                                      alt="@item.Nickname 的头像" class="user-avatar">
                                 <div>
@@ -397,7 +397,7 @@
                                 @rank
                             </div>
                             <div class="user-info">
-                                <img src="@(item.Avatar != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(item.Avatar)}" :
+                                <img src="@(!string.IsNullOrEmpty(item.AvatarUrl) ? item.AvatarUrl :
                                           $"https://picsum.photos/40/40?random={item.UserId}")"
                                      alt="@item.Nickname 的头像" class="user-avatar">
                                 <div>

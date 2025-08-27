@@ -98,3 +98,4 @@ Migrations/
 /MahjongAccount/data/database.db
 /MahjongAccount/data/database.db-shm
 /MahjongAccount/data/database.db-wal
+/MahjongAccount/wwwroot/avatar
