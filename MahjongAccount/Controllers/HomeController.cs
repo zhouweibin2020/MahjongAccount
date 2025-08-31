@@ -1,9 +1,11 @@
 using MahjongAccount.Data;
-using MahjongAccount.Models;
 using MahjongAccount.Models.Dtos;
 using MahjongAccount.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace MahjongAccount.Controllers;
 
@@ -11,9 +13,16 @@ public class HomeController : Controller
 {
     private readonly AppDbContext _context;
 
-    public HomeController(AppDbContext context)
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<HomeController> _logger;
+    private readonly HomeAssistant _haConfigDto;
+
+    public HomeController(AppDbContext context, IHttpClientFactory httpClientFactory, ILogger<HomeController> logger, IOptions<HomeAssistant> options)
     {
         _context = context;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+        _haConfigDto = options.Value;
     }
 
     // 检查用户是否登录
@@ -372,5 +381,110 @@ public class HomeController : Controller
         // 清除Cookies中的用户选择
         HttpContext.Response.Cookies.Delete("SelectedUserId");
         return RedirectToAction("UserSelect", "User");
+    }
+
+    /// <summary>
+    /// 处理设备控制请求
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ControlDevice(string action)
+    {
+        // 获取客户端实际IP地址，考虑反向代理情况
+        var clientIp = InternalHelper.GetClientIpAddress(HttpContext);
+
+        // 判断是否为内网访问
+        var isLocal = InternalHelper.IsInternalIpAddress(clientIp);
+
+        if (!isLocal)
+        {
+            return Json(new { success = false, message = "仅允许内网访问此操作" });
+        }
+        try
+        {
+            if (string.IsNullOrEmpty(action))
+            {
+                return Json(new { success = false, message = "操作指令不能为空" });
+            }
+
+            // 调用Home Assistant API执行操作
+            var success = await ExecuteHomeAssistantAction(action);
+
+            return Json(new
+            {
+                success = success,
+                message = success ? "操作成功" : "操作失败，请检查设备连接"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "设备控制出错，操作: {Action}", action);
+            return Json(new { success = false, message = "系统错误，请稍后重试" });
+        }
+    }
+
+    /// <summary>
+    /// 执行Home Assistant操作
+    /// </summary>
+    private async Task<bool> ExecuteHomeAssistantAction(string action)
+    {
+        // 映射操作到HA的服务和实体ID
+        var (serviceUrl, entityIds) = action switch
+        {
+            //"trun_on_entrance_guard" => ("/api/services/switch/turn_on", new[] { "switch.giot_cn_888793280_v83ksm_on_p_3_1", "switch.giot_cn_888793280_v83ksm_on_p_4_1" }), // 开门禁实体ID
+            //"open_door" => ("/api/services/button/press", new[] { "button.giot_cn_1007444492_v51ksm_all_open_a_15_1" }), // 开门实体ID
+            "turn_on_mahjong_machine" => ("/api/services/switch/turn_on", new[] { "switch.cuco_cn_573061905_v3_on_p_2_1" }), // 麻将机开启实体ID
+            "turn_off_mahjong_machine" => ("/api/services/switch/turn_off", new[] { "switch.cuco_cn_573061905_v3_on_p_2_1" }), // 麻将机关闭实体ID
+            _ => (null, null)
+        };
+
+        // 验证映射结果
+        if (string.IsNullOrEmpty(serviceUrl) || entityIds == null || !entityIds.Any())
+        {
+            _logger.LogWarning("未找到对应的设备操作映射: {Action}", action);
+            return false;
+        }
+
+        try
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _haConfigDto.AccessToken);
+
+            for (int i = 0; i < entityIds.Length; i++)
+            {
+                if (i > 0)
+                {
+                    // 多个请求间隔500毫秒，避免请求过快被拒绝
+                    await Task.Delay(500);
+                }
+                string? entityId = entityIds[i];
+                // 构建请求内容
+                var requestBody = new { entity_id = entityId };
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(requestBody),
+                    System.Text.Encoding.UTF8,
+                    "application/json"
+                );
+
+                // 发送请求到Home Assistant
+                var response = await client.PostAsync($"{_haConfigDto.BaseUrl}{serviceUrl}", content);
+                response.EnsureSuccessStatusCode();
+            }
+
+            return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "调用Home Assistant API失败，操作: {Action}", action);
+            return false;
+        }
+    }
+
+    public IActionResult WeUIError(string title, string error = "")
+    {
+        ViewBag.Title = title;
+        ViewBag.ErrorMessage = error;
+        return View();
     }
 }

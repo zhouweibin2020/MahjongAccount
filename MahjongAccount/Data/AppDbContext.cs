@@ -15,6 +15,7 @@ namespace MahjongAccount.Data
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<GameResult> GameResults { get; set; }
         public DbSet<SettlementTransaction> SettlementTransactions { get; set; }
+        public DbSet<UserDeviceBinding> UserDeviceBindings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

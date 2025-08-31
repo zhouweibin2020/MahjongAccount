@@ -125,7 +125,7 @@
         }
     </div>
 
-    @if (Model != null && Model.Any())
+    @if (Model != null && Model.Any() && @ViewBag.IsLocalNetwork)
     {
         <a asp-action="CreateOrUpdate" class="create-btn">
             <button class="weui-btn weui-btn_primary">创建新用户</button>

@@ -1,15 +1,8 @@
 using MahjongAccount.Data;
 using MahjongAccount.Hubs;
+using MahjongAccount.Models.Dtos;
 using Microsoft.EntityFrameworkCore;
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using System.IO;
 
 // 配置Serilog日志
 var logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "Logs");
@@ -36,6 +29,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
+builder.Services.AddHttpClient();
+builder.Services.Configure<HomeAssistant>(builder.Configuration.GetSection("HomeAssistant"));
 
 // 添加数据库上下文 - MySQL
 builder.Services.AddDbContext<AppDbContext>(options =>

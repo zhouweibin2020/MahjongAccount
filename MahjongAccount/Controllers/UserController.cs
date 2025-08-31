@@ -19,12 +19,21 @@ namespace MahjongAccount.Controllers
         // 用户选择页面
         public async Task<IActionResult> UserSelect()
         {
+            // 获取客户端实际IP地址，考虑反向代理情况
+            var clientIp = InternalHelper.GetClientIpAddress(HttpContext);
+
+            // 判断是否为内网访问
+            var isLocal = InternalHelper.IsInternalIpAddress(clientIp);
+
             // 获取所有用户列表
             var users = await _context.Users.ToListAsync();
+
+            ViewBag.IsLocalNetwork = isLocal;
+
             return View(users);
         }
-
-        // 选择用户后的处理
+        
+        // 选择用户后的处理，包含设备绑定随机码
         public async Task<IActionResult> ChooseUser(int userId)
         {
             var user = await _context.Users.FindAsync(userId);
@@ -33,11 +42,80 @@ namespace MahjongAccount.Controllers
                 return NotFound();
             }
 
-            // 这里可以实现用户选择逻辑，例如：
-            // 1. 记录用户会话
-            // 2. 跳转到首页
-            HttpContext.Response.Cookies.Append("SelectedUserId", userId.ToString());
+            var oldBindings = await _context.UserDeviceBindings.Where(b => b.UserId == userId).ToListAsync();
+
+            // 获取客户端实际IP地址，考虑反向代理情况
+            var clientIp = InternalHelper.GetClientIpAddress(HttpContext);
+            // 判断是否为内网访问
+            var isLocal = InternalHelper.IsInternalIpAddress(clientIp);
+            if (!isLocal && !HttpContext.Request.Cookies.Keys.Contains("access_token") && oldBindings.Any()) // 非内网且无有效Cookie且已有绑定
+            {
+                return RedirectToAction("WeUIError", "Home", new { title = "仅允许内网访问此操作" });
+            }
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,  // 增强安全性，防止JS访问
+                Secure = HttpContext.Request.IsHttps,  // HTTPS环境下才传输
+                SameSite = SameSiteMode.Strict,
+                // 设置Cookie过期时间为1年（永久性Cookie）
+                Expires = DateTimeOffset.UtcNow.AddYears(1)
+            };
+            // 1. 检查是否已有access_token的Cookie
+            var accessToken = HttpContext.Request.Cookies["access_token"];
+            if (string.IsNullOrEmpty(accessToken) || !oldBindings.Any(f => f.AccessToken.Equals(accessToken)))
+            {
+                // 如果没有，则生成新的并存储到Cookie
+                accessToken = GenerateAccessToken();
+                HttpContext.Response.Cookies.Append("access_token", accessToken, cookieOptions);
+                // 2. 保存用户与设备绑定关系到数据库
+                await SaveUserDeviceBinding(userId, accessToken);
+            }
+            HttpContext.Response.Cookies.Append("SelectedUserId", userId.ToString(), cookieOptions);
+
+            // 跳转到首页并携带设备码（或使用视图过渡）
             return RedirectToAction("Index", "Home");
+        }
+
+        // 保存用户与access_token的绑定关系
+        private async Task SaveUserDeviceBinding(int userId, string accessToken)
+        {
+            var binding = new UserDeviceBinding
+            {
+                UserId = userId,
+                AccessToken = accessToken,  // 存储access_token
+                BindingTime = DateTime.Now,
+                DeviceInfo = GetDeviceInfo()
+            };
+
+            _context.UserDeviceBindings.Add(binding);
+            await _context.SaveChangesAsync();
+        }
+
+        // 获取设备相关信息
+        private string GetDeviceInfo()
+        {
+            var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            return $"IP: {ipAddress}, Browser: {userAgent}";
+        }
+
+        // 生成符合标准的access_token（32位长度）
+        private string GenerateAccessToken()
+        {
+            // 包含大小写字母、数字和特殊字符，增强安全性
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+            var data = new byte[32];  // 32字节用于生成32位字符
+            System.Security.Cryptography.RandomNumberGenerator.Fill(data);  // 填充随机字节
+
+            var result = new char[32];
+            for (int i = 0; i < data.Length; i++)
+            {
+                // 将随机字节映射到字符集索引
+                result[i] = chars[data[i] % chars.Length];
+            }
+            return new string(result);
         }
 
         // 创建或更新用户页面
@@ -62,6 +140,20 @@ namespace MahjongAccount.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateOrUpdate(int? id, string nickname, IFormFile? avatar)
         {
+            if (!id.HasValue)
+            {
+                // 获取客户端实际IP地址，考虑反向代理情况
+                var clientIp = InternalHelper.GetClientIpAddress(HttpContext);
+
+                // 判断是否为内网访问
+                var isLocal = InternalHelper.IsInternalIpAddress(clientIp);
+
+                if (!isLocal)
+                {
+                    return RedirectToAction("WeUIError", "Home", new { title = "仅允许内网访问此操作" });
+                }
+            }
+
             // 确保头像文件夹存在
             var avatarFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "avatar");
             if (!Directory.Exists(avatarFolder))
@@ -151,13 +243,13 @@ namespace MahjongAccount.Controllers
             if (!id.HasValue)
             {
                 OnUserCreated(user);
+                return RedirectToAction("UserSelect");
             }
             else
             {
                 OnUserUpdated(user);
+                return RedirectToAction("Index", "Home");
             }
-
-            return RedirectToAction("UserSelect");
         }
 
 
