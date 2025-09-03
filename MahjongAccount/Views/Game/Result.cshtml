@@ -297,7 +297,7 @@
                 <a asp-action="Room" asp-route-gameId="@Model.Game.Id" asp-route-view_flow="true" class="weui-btn weui-btn_default">
                     查看详细流水
                 </a>
-                <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_primary">
+                <a asp-action="Index" asp-controller="Home" asp-route-autoGoGame="false" class="weui-btn weui-btn_primary">
                     返回首页
                 </a>
             </div>
@@ -311,7 +311,7 @@
             <div class="empty-state">
                 <i class="fa fa-exclamation-circle empty-icon"></i>
                 <p>无法找到指定的牌局结果</p>
-                <a asp-action="Index" asp-controller="Home" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
+                <a asp-action="Index" asp-controller="Home" asp-route-autoGoGame="false" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
                     返回首页
                 </a>
             </div>

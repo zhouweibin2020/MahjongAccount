@@ -298,7 +298,7 @@
             <div class="empty-state" style="text-align: center; padding: 30px 0;">
                 <i class="fa fa-exclamation-circle" style="font-size: 50px; color: #ccc; margin-bottom: 15px;"></i>
                 <p>无法获取牌局信息</p>
-                <a href="@Url.Action("Index", "Home")" class="weui-btn weui-btn_default" style="margin-top: 20px;">
+                <a href="@Url.Action("Index", "Home", new { autoGoGame = false })" class="weui-btn weui-btn_default" style="margin-top: 20px;">
                     返回首页
                 </a>
             </div>
@@ -450,7 +450,7 @@
             }
 
             <div class="weui-tabbar">
-                <a href="@Url.Action("Index", "Home")" class="weui-tabbar__item">
+                <a href="@Url.Action("Index", "Home", new { autoGoGame = false })" class="weui-tabbar__item">
                     <i class="weui-tabbar__icon fa fa-home"></i>
                     <p class="weui-tabbar__label">首页</p>
                 </a>

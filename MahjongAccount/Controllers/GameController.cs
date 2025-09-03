@@ -229,7 +229,7 @@ namespace MahjongAccount.Controllers
 
                 if (!isParticipant)
                 {
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home", new { autoGoGame = false });
                 }
 
                 // 获取所有玩家信息 - 使用具体DTO

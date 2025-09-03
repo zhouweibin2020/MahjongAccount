@@ -1,4 +1,4 @@
-using MahjongAccount.Data;
+ï»¿using MahjongAccount.Data;
 using MahjongAccount.Models.Dtos;
 using MahjongAccount.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +25,7 @@ public class HomeController : Controller
         _haConfigDto = options.Value;
     }
 
-    // ¼ì²éÓÃ»§ÊÇ·ñµÇÂ¼
+    // æ£€æŸ¥ç”¨æˆ·æ˜¯å¦ç™»å½•
     private bool IsUserLoggedIn()
     {
         return HttpContext.Request.Cookies.Keys.Contains("SelectedUserId");
@@ -36,15 +36,19 @@ public class HomeController : Controller
         return Convert.ToInt32(HttpContext.Request.Cookies["SelectedUserId"]);
     }
 
-    // Ê×Ò³
-    public async Task<IActionResult> Index()
+    /// <summary>
+    /// é¦–é¡µ
+    /// </summary>
+    /// <param name="autoGoGame">æ˜¯å¦è‡ªåŠ¨è¿›å…¥ç‰Œå±€ï¼Œé»˜è®¤ï¼šæ˜¯</param>
+    /// <returns></returns>
+    public async Task<IActionResult> Index(bool autoGoGame = true)
     {
         if (!IsUserLoggedIn())
         {
             return RedirectToAction("UserSelect", "User");
         }
 
-        // »ñÈ¡µ±Ç°ÓÃ»§ĞÅÏ¢
+        // è·å–å½“å‰ç”¨æˆ·ä¿¡æ¯
         var userId = GetCurrentUserId();
         var user = await _context.Users.FindAsync(userId);
 
@@ -54,7 +58,22 @@ public class HomeController : Controller
             return RedirectToAction("UserSelect", "User");
         }
 
-        // ×¼±¸Ê×Ò³ÊÓÍ¼Ä£ĞÍ
+        if (autoGoGame)
+        {
+            // è·å–æœ€æ–°çš„è¿›è¡Œä¸­ç‰Œå±€ï¼ˆä»…æ˜¾ç¤ºä¸€æ¡ï¼‰
+            var ongoingGames = await _context.Games
+                .Where(g => g.Status == "ongoing")
+                .Include(g => g.GamePlayers)
+                .Where(f => f.GamePlayers.Any(u => u.UserId.Equals(userId)))
+                .OrderByDescending(g => g.CreatedAt)
+                .FirstOrDefaultAsync();
+            if (ongoingGames is not null)
+            {
+                return RedirectToAction("Room", "Game", new { gameId = ongoingGames.Id });
+            }
+        }
+
+        // å‡†å¤‡é¦–é¡µè§†å›¾æ¨¡å‹
         var viewModel = new IndexViewModel
         {
             User = user
@@ -63,12 +82,12 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
-    // »ñÈ¡½øĞĞÖĞµÄÅÆ¾Ö£¨¹©Ç°¶ËAJAXµ÷ÓÃ£©
+    // è·å–è¿›è¡Œä¸­çš„ç‰Œå±€ï¼ˆä¾›å‰ç«¯AJAXè°ƒç”¨ï¼‰
     public async Task<IActionResult> OngoingGames()
     {
         if (!IsUserLoggedIn())
         {
-            return Json(new { success = false, message = "ÇëÏÈÑ¡ÔñÓÃ»§" });
+            return Json(new { success = false, message = "è¯·å…ˆé€‰æ‹©ç”¨æˆ·" });
         }
 
         try
@@ -83,7 +102,7 @@ public class HomeController : Controller
                     creator_name = g.Creator.Nickname,
                     created_at = g.CreatedAt,
                     player_count = g.GamePlayers.Count,
-                    // ÅÅ³ıÒÑ¼ÓÈë¸ÃÅÆ¾ÖµÄÓÃ»§
+                    // æ’é™¤å·²åŠ å…¥è¯¥ç‰Œå±€çš„ç”¨æˆ·
                     can_join = !g.GamePlayers.Any(gp => gp.UserId == GetCurrentUserId())
                 })
                 .OrderByDescending(g => g.created_at)
@@ -93,11 +112,11 @@ public class HomeController : Controller
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = "¼ÓÔØÅÆ¾ÖÊ§°Ü£º" + ex.Message });
+            return Json(new { success = false, message = "åŠ è½½ç‰Œå±€å¤±è´¥ï¼š" + ex.Message });
         }
     }
 
-    // ÀúÊ·¼ÇÂ¼Ò³ - Ö÷·½·¨
+    // å†å²è®°å½•é¡µ - ä¸»æ–¹æ³•
     public async Task<IActionResult> History(DateTime? startDate = null, DateTime? endDate = null)
     {
         if (!IsUserLoggedIn())
@@ -107,37 +126,37 @@ public class HomeController : Controller
 
         var userId = GetCurrentUserId();
 
-        // »ñÈ¡µ±Ç°ÓÃ»§ĞÅÏ¢
+        // è·å–å½“å‰ç”¨æˆ·ä¿¡æ¯
         var currentUser = await _context.Users.FindAsync(userId);
 
-        // »ñÈ¡µ±Ç°ÓÃ»§²ÎÓëµÄËùÓĞÅÆ¾ÖID
+        // è·å–å½“å‰ç”¨æˆ·å‚ä¸çš„æ‰€æœ‰ç‰Œå±€ID
         var gameIdsQuery = _context.GamePlayers
             .Where(gp => gp.UserId == userId)
             .Select(gp => gp.GameId);
 
-        // ¹¹½¨ÅÆ¾Ö²éÑ¯
+        // æ„å»ºç‰Œå±€æŸ¥è¯¢
         var gamesQuery = _context.Games
             .Where(g => gameIdsQuery.Contains(g.Id));
 
-        // Ó¦ÓÃÈÕÆÚÉ¸Ñ¡
+        // åº”ç”¨æ—¥æœŸç­›é€‰
         if (startDate.HasValue)
         {
             gamesQuery = gamesQuery.Where(g => g.CreatedAt >= startDate.Value);
         }
         if (endDate.HasValue)
         {
-            // ½áÊøÈÕÆÚ°üº¬µ±ÌìµÄËùÓĞ¼ÇÂ¼
+            // ç»“æŸæ—¥æœŸåŒ…å«å½“å¤©çš„æ‰€æœ‰è®°å½•
             var endDateWithTime = endDate.Value.Date.AddDays(1).AddTicks(-1);
             gamesQuery = gamesQuery.Where(g => g.CreatedAt <= endDateWithTime);
         }
 
-        // Ö´ĞĞ²éÑ¯²¢ÅÅĞò
+        // æ‰§è¡ŒæŸ¥è¯¢å¹¶æ’åº
         var games = await gamesQuery
             .Include(g => g.GameResults)
             .OrderByDescending(g => g.CreatedAt)
             .ToListAsync();
 
-        // ´¦ÀíÃ¿¸öÓÎÏ·£¬»ñÈ¡µ±Ç°ÓÃ»§µÄ½á¹û
+        // å¤„ç†æ¯ä¸ªæ¸¸æˆï¼Œè·å–å½“å‰ç”¨æˆ·çš„ç»“æœ
         var historyItems = games.Select(game =>
         {
             var userResult = game.GameResults.FirstOrDefault(gr => gr.UserId == userId);
@@ -169,7 +188,7 @@ public class HomeController : Controller
         return View(historyViewModel);
     }
 
-    // ÅÅĞĞ°ñÒ³
+    // æ’è¡Œæ¦œé¡µ
     public async Task<IActionResult> Rankings(string period = "total", string type = "amount", string extreme = "day")
     {
         if (!IsUserLoggedIn())
@@ -178,35 +197,35 @@ public class HomeController : Controller
         }
 
         var userId = GetCurrentUserId();
-        // ×¼±¸Ê±¼äÉ¸Ñ¡Ìõ¼ş
+        // å‡†å¤‡æ—¶é—´ç­›é€‰æ¡ä»¶
         DateTime? startDate = null;
         if (period == "month")
         {
-            // µ±ÔÂµÚÒ»Ìì
+            // å½“æœˆç¬¬ä¸€å¤©
             startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
         }
         else if (period == "year")
         {
-            // µ±ÄêµÚÒ»Ìì
+            // å½“å¹´ç¬¬ä¸€å¤©
             startDate = new DateTime(DateTime.Now.Year, 1, 1);
         }
 
-        // ½ğ¶î°ñ»ò´ÎÊı°ñÊı¾İ
+        // é‡‘é¢æ¦œæˆ–æ¬¡æ•°æ¦œæ•°æ®
         var rankings = type == "amount"
             ? await GetAmountRankings(startDate, userId)
             : await GetTimesRankings(startDate, userId);
-        // »ñÈ¡µ±Ç°ÓÃ»§µÄÅÅÃûĞÅÏ¢
+        // è·å–å½“å‰ç”¨æˆ·çš„æ’åä¿¡æ¯
         var currentUserRanking = rankings.FirstOrDefault(r => r.UserId == userId);
 
-        //// ¼«Öµ°ñÊı¾İ£¨µ¥ÈÕ/µ¥ÔÂ£©
+        //// æå€¼æ¦œæ•°æ®ï¼ˆå•æ—¥/å•æœˆï¼‰
         var topExtremes = extreme == "day"
             ? await GetTopDailyExtremes(userId)
             : await GetTopMonthlyExtremes(userId);
         var bottomExtremes = extreme == "day"
             ? await GetBottomDailyExtremes(userId)
-            :  await GetBottomMonthlyExtremes(userId);
+            : await GetBottomMonthlyExtremes(userId);
 
-        // ¹¹½¨ÊÓÍ¼Ä£ĞÍ
+        // æ„å»ºè§†å›¾æ¨¡å‹
         var viewModel = new RankingsViewModel
         {
             Period = period,
@@ -220,11 +239,11 @@ public class HomeController : Controller
         return View(viewModel);
     }
 
-    // »ñÈ¡½ğ¶îÅÅĞĞ°ñÊı¾İ
+    // è·å–é‡‘é¢æ’è¡Œæ¦œæ•°æ®
     private async Task<List<UserRankingDto>> GetAmountRankings(DateTime? startDate, int userId)
     {
         return await _context.GameResults
-            .Include(gr => gr.Game)  // ÏÔÊ½¼ÓÔØGameµ¼º½ÊôĞÔ
+            .Include(gr => gr.Game)  // æ˜¾å¼åŠ è½½Gameå¯¼èˆªå±æ€§
             .Join(
                 _context.Users,
                 gr => gr.UserId,
@@ -240,18 +259,18 @@ public class HomeController : Controller
                 Nickname = g.Key.Nickname,
                 AvatarUrl = g.Key.AvatarUrl,
                 TotalPoints = g.Sum(x => x.gr.NetResult),
-                GameCount = g.Select(x => x.gr.GameId).Distinct().Count()  // Ôö¼Ó²ÎÓë¾ÖÊı
+                GameCount = g.Select(x => x.gr.GameId).Distinct().Count()  // å¢åŠ å‚ä¸å±€æ•°
             })
             .OrderByDescending(x => x.TotalPoints)
             .Take(10)
             .ToListAsync<UserRankingDto>();
     }
 
-    // »ñÈ¡´ÎÊıÅÅĞĞ°ñÊı¾İ
+    // è·å–æ¬¡æ•°æ’è¡Œæ¦œæ•°æ®
     private async Task<List<UserRankingDto>> GetTimesRankings(DateTime? startDate, int userId)
     {
         return await _context.GameResults
-            .Include(gr => gr.Game)  // ÏÔÊ½¼ÓÔØGameµ¼º½ÊôĞÔ
+            .Include(gr => gr.Game)  // æ˜¾å¼åŠ è½½Gameå¯¼èˆªå±æ€§
             .Join(
                 _context.Users,
                 gr => gr.UserId,
@@ -273,19 +292,19 @@ public class HomeController : Controller
             .ToListAsync<UserRankingDto>();
     }
 
-    // »ñÈ¡µ¥ÈÕÓ®×î¶àÊı¾İ
+    // è·å–å•æ—¥èµ¢æœ€å¤šæ•°æ®
     private async Task<List<ExtremeDto>> GetTopDailyExtremes(int userId)
     {
         return await GetDailyExtremes(true, userId);
     }
 
-    // »ñÈ¡µ¥ÈÕÊä×î¶àÊı¾İ
+    // è·å–å•æ—¥è¾“æœ€å¤šæ•°æ®
     private async Task<List<ExtremeDto>> GetBottomDailyExtremes(int userId)
     {
         return await GetDailyExtremes(false, userId);
     }
 
-    // Í¨ÓÃµ¥ÈÕ¼«Öµ²éÑ¯
+    // é€šç”¨å•æ—¥æå€¼æŸ¥è¯¢
     private async Task<List<ExtremeDto>> GetDailyExtremes(bool isTop, int userId)
     {
         return await _context.GameResults
@@ -301,7 +320,7 @@ public class HomeController : Controller
                 x.user.Id,
                 x.user.Nickname,
                 x.user.AvatarUrl,
-                Date = x.gr.Game.CreatedAt.Date  // °´ÈÕÆÚ·Ö×é
+                Date = x.gr.Game.CreatedAt.Date  // æŒ‰æ—¥æœŸåˆ†ç»„
             })
             .Where(g => isTop
                 ? g.Sum(x => x.gr.NetResult) > 0
@@ -320,19 +339,19 @@ public class HomeController : Controller
             .ToListAsync<ExtremeDto>();
     }
 
-    // »ñÈ¡µ¥ÔÂÓ®×î¶àÊı¾İ
+    // è·å–å•æœˆèµ¢æœ€å¤šæ•°æ®
     private async Task<List<ExtremeDto>> GetTopMonthlyExtremes(int userId)
     {
         return await GetMonthlyExtremes(true, userId);
     }
 
-    // »ñÈ¡µ¥ÔÂÊä×î¶àÊı¾İ
+    // è·å–å•æœˆè¾“æœ€å¤šæ•°æ®
     private async Task<List<ExtremeDto>> GetBottomMonthlyExtremes(int userId)
     {
         return await GetMonthlyExtremes(false, userId);
     }
 
-    // Í¨ÓÃµ¥ÔÂ¼«Öµ²éÑ¯
+    // é€šç”¨å•æœˆæå€¼æŸ¥è¯¢
     private async Task<List<ExtremeDto>> GetMonthlyExtremes(bool isTop, int userId)
     {
         return await _context.GameResults
@@ -348,7 +367,7 @@ public class HomeController : Controller
                 x.user.Id,
                 x.user.Nickname,
                 x.user.AvatarUrl,
-                Month = new DateTime(x.gr.Game.CreatedAt.Year, x.gr.Game.CreatedAt.Month, 1)  // °´ÔÂ·İ·Ö×é
+                Month = new DateTime(x.gr.Game.CreatedAt.Year, x.gr.Game.CreatedAt.Month, 1)  // æŒ‰æœˆä»½åˆ†ç»„
             })
             .Where(g => isTop
                 ? g.Sum(x => x.gr.NetResult) > 0
@@ -375,73 +394,73 @@ public class HomeController : Controller
         return View();
     }
 
-    // ÍË³öµÇÂ¼/ÇĞ»»ÓÃ»§
+    // é€€å‡ºç™»å½•/åˆ‡æ¢ç”¨æˆ·
     public IActionResult Logout()
     {
-        // Çå³ıCookiesÖĞµÄÓÃ»§Ñ¡Ôñ
+        // æ¸…é™¤Cookiesä¸­çš„ç”¨æˆ·é€‰æ‹©
         HttpContext.Response.Cookies.Delete("SelectedUserId");
         return RedirectToAction("UserSelect", "User");
     }
 
     /// <summary>
-    /// ´¦ÀíÉè±¸¿ØÖÆÇëÇó
+    /// å¤„ç†è®¾å¤‡æ§åˆ¶è¯·æ±‚
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ControlDevice(string action)
     {
-        // »ñÈ¡¿Í»§¶ËÊµ¼ÊIPµØÖ·£¬¿¼ÂÇ·´Ïò´úÀíÇé¿ö
+        // è·å–å®¢æˆ·ç«¯å®é™…IPåœ°å€ï¼Œè€ƒè™‘åå‘ä»£ç†æƒ…å†µ
         var clientIp = InternalHelper.GetClientIpAddress(HttpContext);
 
-        // ÅĞ¶ÏÊÇ·ñÎªÄÚÍø·ÃÎÊ
+        // åˆ¤æ–­æ˜¯å¦ä¸ºå†…ç½‘è®¿é—®
         var isLocal = InternalHelper.IsInternalIpAddress(clientIp);
 
         if (!isLocal)
         {
-            return Json(new { success = false, message = "½öÔÊĞíÄÚÍø·ÃÎÊ´Ë²Ù×÷" });
+            return Json(new { success = false, message = "ä»…å…è®¸å†…ç½‘è®¿é—®æ­¤æ“ä½œ" });
         }
         try
         {
             if (string.IsNullOrEmpty(action))
             {
-                return Json(new { success = false, message = "²Ù×÷Ö¸Áî²»ÄÜÎª¿Õ" });
+                return Json(new { success = false, message = "æ“ä½œæŒ‡ä»¤ä¸èƒ½ä¸ºç©º" });
             }
 
-            // µ÷ÓÃHome Assistant APIÖ´ĞĞ²Ù×÷
+            // è°ƒç”¨Home Assistant APIæ‰§è¡Œæ“ä½œ
             var success = await ExecuteHomeAssistantAction(action);
 
             return Json(new
             {
                 success = success,
-                message = success ? "²Ù×÷³É¹¦" : "²Ù×÷Ê§°Ü£¬Çë¼ì²éÉè±¸Á¬½Ó"
+                message = success ? "æ“ä½œæˆåŠŸ" : "æ“ä½œå¤±è´¥ï¼Œè¯·æ£€æŸ¥è®¾å¤‡è¿æ¥"
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Éè±¸¿ØÖÆ³ö´í£¬²Ù×÷: {Action}", action);
-            return Json(new { success = false, message = "ÏµÍ³´íÎó£¬ÇëÉÔºóÖØÊÔ" });
+            _logger.LogError(ex, "è®¾å¤‡æ§åˆ¶å‡ºé”™ï¼Œæ“ä½œ: {Action}", action);
+            return Json(new { success = false, message = "ç³»ç»Ÿé”™è¯¯ï¼Œè¯·ç¨åé‡è¯•" });
         }
     }
 
     /// <summary>
-    /// Ö´ĞĞHome Assistant²Ù×÷
+    /// æ‰§è¡ŒHome Assistantæ“ä½œ
     /// </summary>
     private async Task<bool> ExecuteHomeAssistantAction(string action)
     {
-        // Ó³Éä²Ù×÷µ½HAµÄ·şÎñºÍÊµÌåID
+        // æ˜ å°„æ“ä½œåˆ°HAçš„æœåŠ¡å’Œå®ä½“ID
         var (serviceUrl, entityIds) = action switch
         {
-            //"trun_on_entrance_guard" => ("/api/services/switch/turn_on", new[] { "switch.giot_cn_888793280_v83ksm_on_p_3_1", "switch.giot_cn_888793280_v83ksm_on_p_4_1" }), // ¿ªÃÅ½ûÊµÌåID
-            //"open_door" => ("/api/services/button/press", new[] { "button.giot_cn_1007444492_v51ksm_all_open_a_15_1" }), // ¿ªÃÅÊµÌåID
-            "turn_on_mahjong_machine" => ("/api/services/switch/turn_on", new[] { "switch.cuco_cn_573061905_v3_on_p_2_1" }), // Âé½«»ú¿ªÆôÊµÌåID
-            "turn_off_mahjong_machine" => ("/api/services/switch/turn_off", new[] { "switch.cuco_cn_573061905_v3_on_p_2_1" }), // Âé½«»ú¹Ø±ÕÊµÌåID
+            //"trun_on_entrance_guard" => ("/api/services/switch/turn_on", new[] { "switch.giot_cn_888793280_v83ksm_on_p_3_1", "switch.giot_cn_888793280_v83ksm_on_p_4_1" }), // å¼€é—¨ç¦å®ä½“ID
+            //"open_door" => ("/api/services/button/press", new[] { "button.giot_cn_1007444492_v51ksm_all_open_a_15_1" }), // å¼€é—¨å®ä½“ID
+            "turn_on_mahjong_machine" => ("/api/services/switch/turn_on", new[] { "switch.cuco_cn_573061905_v3_on_p_2_1" }), // éº»å°†æœºå¼€å¯å®ä½“ID
+            "turn_off_mahjong_machine" => ("/api/services/switch/turn_off", new[] { "switch.cuco_cn_573061905_v3_on_p_2_1" }), // éº»å°†æœºå…³é—­å®ä½“ID
             _ => (null, null)
         };
 
-        // ÑéÖ¤Ó³Éä½á¹û
+        // éªŒè¯æ˜ å°„ç»“æœ
         if (string.IsNullOrEmpty(serviceUrl) || entityIds == null || !entityIds.Any())
         {
-            _logger.LogWarning("Î´ÕÒµ½¶ÔÓ¦µÄÉè±¸²Ù×÷Ó³Éä: {Action}", action);
+            _logger.LogWarning("æœªæ‰¾åˆ°å¯¹åº”çš„è®¾å¤‡æ“ä½œæ˜ å°„: {Action}", action);
             return false;
         }
 
@@ -455,11 +474,11 @@ public class HomeController : Controller
             {
                 if (i > 0)
                 {
-                    // ¶à¸öÇëÇó¼ä¸ô500ºÁÃë£¬±ÜÃâÇëÇó¹ı¿ì±»¾Ü¾ø
+                    // å¤šä¸ªè¯·æ±‚é—´éš”500æ¯«ç§’ï¼Œé¿å…è¯·æ±‚è¿‡å¿«è¢«æ‹’ç»
                     await Task.Delay(500);
                 }
                 string? entityId = entityIds[i];
-                // ¹¹½¨ÇëÇóÄÚÈİ
+                // æ„å»ºè¯·æ±‚å†…å®¹
                 var requestBody = new { entity_id = entityId };
                 var content = new StringContent(
                     JsonConvert.SerializeObject(requestBody),
@@ -467,7 +486,7 @@ public class HomeController : Controller
                     "application/json"
                 );
 
-                // ·¢ËÍÇëÇóµ½Home Assistant
+                // å‘é€è¯·æ±‚åˆ°Home Assistant
                 var response = await client.PostAsync($"{_haConfigDto.BaseUrl}{serviceUrl}", content);
                 response.EnsureSuccessStatusCode();
             }
@@ -476,7 +495,7 @@ public class HomeController : Controller
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "µ÷ÓÃHome Assistant APIÊ§°Ü£¬²Ù×÷: {Action}", action);
+            _logger.LogError(ex, "è°ƒç”¨Home Assistant APIå¤±è´¥ï¼Œæ“ä½œ: {Action}", action);
             return false;
         }
     }

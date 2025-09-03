@@ -74,7 +74,7 @@ namespace MahjongAccount.Controllers
             HttpContext.Response.Cookies.Append("SelectedUserId", userId.ToString(), cookieOptions);
 
             // 跳转到首页并携带设备码（或使用视图过渡）
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home", new { autoGoGame = false });
         }
 
         // 保存用户与access_token的绑定关系
@@ -248,7 +248,7 @@ namespace MahjongAccount.Controllers
             else
             {
                 OnUserUpdated(user);
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Home", new { autoGoGame = false });
             }
         }
 
