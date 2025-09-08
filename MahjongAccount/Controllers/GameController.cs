@@ -176,9 +176,9 @@ namespace MahjongAccount.Controllers
                 var game = await _context.Games
                     .FirstOrDefaultAsync(g => g.Id == gameId);
 
-                if (game == null)                
+                if (game == null)
                     return RedirectToAction("SimpleError", "Home", new { message = "牌局不存在" });
-                
+
                 // 检查是否已在牌局中
                 var isAlreadyJoined = await _context.GamePlayers
                     .AnyAsync(gp => gp.GameId == gameId && gp.UserId == userId);
@@ -218,7 +218,7 @@ namespace MahjongAccount.Controllers
                     .FirstOrDefaultAsync(g => g.Id == gameId);
 
                 if (game == null)
-                    return RedirectToAction("SimpleError", "Home", new { message = "牌局不存在" });                
+                    return RedirectToAction("SimpleError", "Home", new { message = "牌局不存在" });
 
                 // 获取当前用户ID
                 var currentUserId = GetCurrentUserId();
@@ -551,7 +551,7 @@ namespace MahjongAccount.Controllers
                 return RedirectToAction("SimpleError", "Home", new { message = "加载结果失败" });
             }
         }
-         
+
         /// <summary>
         /// 处理换风请求
         /// </summary>
@@ -598,6 +598,92 @@ namespace MahjongAccount.Controllers
             });
 
             return Ok(new { success = true });
+        }
+
+        // 牌局统计
+        public async Task<IActionResult> Statistics(int gameId, int userId)
+        {
+            if (!IsUserLoggedIn())
+                return RedirectToAction("UserSelect", "User");
+
+            try
+            {
+                // 获取牌局信息
+                var game = await _context.Games
+                    .FirstOrDefaultAsync(g => g.Id == gameId && g.Status == "ended");
+
+                if (game == null)
+                    return RedirectToAction("WeUIError", "Home", new { title = "未找到牌局" });
+
+                // 人员金额(输)统计
+                var loseTotalAmountStatistics = await _context.Transactions
+                    .Where(f => f.GameId == gameId && f.FromUserId == userId)
+                    .GroupBy(t => t.ToUser) // 按接收用户分组
+                    .Select(g => new TotalAmountDto
+                    {
+                        User = g.Key,
+                        TotalAmount = g.Sum(t => t.Amount)
+                    })
+                    .OrderByDescending(x => x.TotalAmount) // 按总金额降序排序                    
+                    .ToArrayAsync();
+
+                // 人员金额(赢)统计
+                var winTotalAmountStatistics = await _context.Transactions
+                    .Where(f => f.GameId == gameId && f.ToUserId == userId)
+                    .GroupBy(t => t.FromUser) // 按接收用户分组
+                    .Select(g => new TotalAmountDto
+                    {
+                        User = g.Key,
+                        TotalAmount = g.Sum(t => t.Amount)
+                    })
+                    .OrderByDescending(x => x.TotalAmount) // 按总金额降序排序                    
+                    .ToArrayAsync();
+
+                var amountGroupStatistics = await _context.Transactions
+                    .Where(f => f.GameId == gameId && f.ToUserId == userId)
+                    .GroupBy(t => t.FromUser) // 按接收用户分组
+                    .Select(g => new TotalAmountDto
+                    {
+                        User = g.Key,
+                        TotalAmount = g.Sum(t => t.Amount)
+                    })
+                    .OrderByDescending(x => x.TotalAmount) // 按总金额降序排序                    
+                    .ToArrayAsync();
+
+                var amountCountStatistics = await _context.Transactions
+                    // 筛选特定牌局和用户的交易
+                    .Where(t => t.GameId == gameId && (t.FromUserId == userId || t.ToUserId == userId))
+                    // 按交易金额分组
+                    .GroupBy(t => t.Amount)
+                    // 计算每组的赢次和输次
+                    .Select(g => new AmountCountStatisticsDto
+                    {
+                        Amount = g.Key,
+                        // 赢次：用户作为接收方的交易次数
+                        WinCount = g.Count(t => t.ToUserId == userId),
+                        // 输次：用户作为支付方的交易次数
+                        LoseCount = g.Count(t => t.FromUserId == userId)
+                    })
+                    // 按金额升序排列
+                    .OrderByDescending(dto => dto.Amount)
+                    .ToArrayAsync();
+
+                // 构建视图模型
+                var viewModel = new StatisticsViewModel
+                {
+                    Game = game,
+                    LoseTotalAmountStatistics = loseTotalAmountStatistics,
+                    WinTotalAmountStatistics = winTotalAmountStatistics,
+                    AmountCountStatistics = amountCountStatistics
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "加载牌局结果失败 - 牌局ID: {GameId}, 用户ID: {UserId}", gameId, userId);
+                return RedirectToAction("SimpleError", "Home", new { message = "加载结果失败" });
+            }
         }
     }
 }

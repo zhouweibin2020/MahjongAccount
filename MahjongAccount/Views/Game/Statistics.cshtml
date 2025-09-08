@@ -1,0 +1,284 @@
+﻿@model MahjongAccount.Models.ViewModels.StatisticsViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>牌局统计 - 麻将记账</title>
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
+    <style>
+        .page-title {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
+            position: relative;
+        }
+
+        .game-info {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stats-container {
+            padding-bottom: 80px;
+            background-color: #f5f5f5;
+        }
+
+        .section-title {
+            padding: 12px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+            .section-title i {
+                margin-right: 8px;
+                color: #2D8CF0;
+            }
+
+        .stats-list {
+            background-color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .stats-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+            .stats-item:last-child {
+                border-bottom: none;
+            }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .amount {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .win {
+            color: #E64340;
+        }
+
+        .lose {
+            color: #1AAD19;
+        }
+
+        .amount-count-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .amount-label {
+            font-size: 16px;
+        }
+
+        .counts {
+            display: flex;
+            gap: 15px;
+        }
+
+        .count-item {
+            width: 100px;
+            text-align: center;
+        }
+
+        .count-value {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .count-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+            background-color: #fff;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .btn-area {
+            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            z-index: 10;
+        }
+
+        .weui-btn {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-title">
+        牌局统计 #@Model.Game?.Id
+    </div>
+
+    @if (Model.Game == null)
+    {
+        <div class="empty-state">
+            <i class="fa fa-exclamation-circle empty-icon"></i>
+            <p>无法获取牌局信息</p>
+            <a href="@Url.Action("Index", "Home")" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
+                返回首页
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="game-info">
+            牌局名称: @Model.Game.Name<br>
+            开始时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")<br>
+            结束时间: @Model.Game.EndedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+        </div>
+
+        <div class="stats-container">
+            <!-- 赢家金额统计 -->
+            <div class="stats-list">
+                <div class="section-title">
+                    <i class="fa fa-trophy"></i> 赢家金额统计
+                </div>
+                @if (Model.WinTotalAmountStatistics != null && Model.WinTotalAmountStatistics.Any())
+                {
+                    foreach (var item in Model.WinTotalAmountStatistics.OrderByDescending(x => x.TotalAmount))
+                    {
+                        <div class="stats-item">
+                            <img src="@(!string.IsNullOrEmpty(item.User?.AvatarUrl) ? item.User.AvatarUrl :
+                                      $"https://picsum.photos/40/40?random={item.User?.Id}")"
+                                 alt="@item.User?.Nickname 的头像" class="user-avatar">
+                            <div class="user-info">
+                                <div class="user-name">@item.User?.Nickname</div>
+                            </div>
+                            <div class="amount win">+¥@item.TotalAmount</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fa fa-smile-o empty-icon"></i>
+                        <p>暂无赢家统计数据</p>
+                    </div>
+                }
+            </div>
+
+            <!-- 输家金额统计 -->
+            <div class="stats-list">
+                <div class="section-title">
+                    <i class="fa fa-frown-o"></i> 输家金额统计
+                </div>
+                @if (Model.LoseTotalAmountStatistics != null && Model.LoseTotalAmountStatistics.Any())
+                {
+                    foreach (var item in Model.LoseTotalAmountStatistics.OrderByDescending(x => x.TotalAmount))
+                    {
+                        <div class="stats-item">
+                            <img src="@(!string.IsNullOrEmpty(item.User?.AvatarUrl) ? item.User.AvatarUrl :
+                                      $"https://picsum.photos/40/40?random={item.User?.Id}")"
+                                 alt="@item.User?.Nickname 的头像" class="user-avatar">
+                            <div class="user-info">
+                                <div class="user-name">@item.User?.Nickname</div>
+                            </div>
+                            <div class="amount lose">-¥@item.TotalAmount</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fa fa-meh-o empty-icon"></i>
+                        <p>暂无输家统计数据</p>
+                    </div>
+                }
+            </div>
+
+            <!-- 金额计次统计 -->
+            <div class="stats-list">
+                <div class="section-title">
+                    <i class="fa fa-bar-chart"></i> 金额计次统计
+                </div>
+                @if (Model.AmountCountStatistics != null && Model.AmountCountStatistics.Any())
+                {
+                    foreach (var item in Model.AmountCountStatistics.OrderByDescending(x => x.Amount))
+                    {
+                        <div class="amount-count-item">
+                            <div class="amount-label">¥@item.Amount</div>
+                            <div class="counts">
+                                <div class="count-item">
+                                    <div class="count-value win">@item.WinCount</div>
+                                    <div class="count-label">赢次</div>
+                                </div>
+                                <div class="count-item">
+                                    <div class="count-value lose">@item.LoseCount</div>
+                                    <div class="count-label">输次</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fa fa-pie-chart empty-icon"></i>
+                        <p>暂无金额计次统计数据</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="btn-area">
+            <a href="javascript:history.back()" class="weui-btn weui-btn_primary">
+                返回上一页
+            </a>
+        </div>
+    }
+</body>
+</html>
