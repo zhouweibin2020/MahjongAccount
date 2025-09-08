@@ -17,11 +17,12 @@
     <style>
         .page-title {
             text-align: center;
-            padding: 20px 0;
-            font-size: 20px;
+            padding: 15px 0;
+            font-size: 18px;
             font-weight: bold;
             border-bottom: 1px solid #eee;
             background-color: #fff;
+            position: relative;
         }
 
         .result-summary {
@@ -123,34 +124,21 @@
         }
 
         .btn-area {
-            padding: 15px;
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #fff;
-            border-top: 1px solid #eee;
-            z-index: 10;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        /* 按钮容器 */
-        .btn-container {
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
             display: flex;
-            gap: 15px; /* 按钮之间的间距 */
+            padding: 15px;
+            z-index: 10;
         }
 
-        /* 调整按钮宽度和样式 */
-        .btn-area .weui-btn {
-            flex: 1; /* 两个按钮平均分配宽度 */
-        }
-
-        /* 内容容器底部内边距可适当减小 */
         .content-container {
-            padding-bottom: 80px; /* 调整为适合新按钮高度的值 */
             box-sizing: border-box;
             min-height: 100vh;
             background-color: #f5f5f5;
+            padding-bottom: 160px;
         }
 
         .weui-btn {
@@ -163,13 +151,6 @@
             color: #666;
             background-color: #f9f9f9;
             border-bottom: 1px solid #eee;
-        }
-
-        /* 添加内容容器样式，确保内容不会被底部按钮遮挡 */
-        .content-container {
-            padding-bottom: 160px; /* 增加到160px确保足够空间 */
-            box-sizing: border-box;
-            min-height: 100vh; /* 确保容器至少占满屏幕高度 */
         }
 
         .current-user {
@@ -216,12 +197,36 @@
             .stats-btn:active {
                 background-color: #1C74D4;
             }
+
+        .weui-tabbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .weui-btn {
+            width: 100%;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
     @if (Model.Game != null)
     {
-        <div class="page-title">牌局结果 #@Model.Game.Id</div>
+        <div class="page-title">
+            <a href="javascript:history.back()" class="back-btn">
+                <i class="fa fa-arrow-left"></i>
+            </a>
+            牌局结果 #@Model.Game.Id
+        </div>
 
         <!-- 添加内容容器，解决底部遮挡问题 -->
         <div class="content-container">
@@ -316,14 +321,24 @@
         </div> <!-- 内容容器结束 -->
 
         <div class="btn-area">
-            <div class="btn-container">
-                <a asp-action="Room" asp-route-gameId="@Model.Game.Id" asp-route-view_flow="true" class="weui-btn weui-btn_default">
-                    查看详细流水
-                </a>
-                <a asp-action="Index" asp-controller="Home" asp-route-autoGoGame="false" class="weui-btn weui-btn_primary">
-                    返回首页
-                </a>
-            </div>
+            <a asp-action="Room" asp-route-gameId="@Model.Game.Id" asp-route-view_flow="true" class="weui-btn weui-btn_primary">
+                查看详细流水
+            </a>
+        </div>
+
+        <div class="weui-tabbar">
+            <a href="@Url.Action("Index", "Home", new { autoGoGame = false })" class="weui-tabbar__item">
+                <i class="weui-tabbar__icon fa fa-home"></i>
+                <p class="weui-tabbar__label">首页</p>
+            </a>
+            <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+                <i class="weui-tabbar__icon fa fa-history"></i>
+                <p class="weui-tabbar__label">历史</p>
+            </a>
+            <a href="#" class="weui-tabbar__item weui-bar__item_on">
+                <i class="weui-tabbar__icon fa fa-gamepad"></i>
+                <p class="weui-tabbar__label">牌局</p>
+            </a>
         </div>
     }
     else

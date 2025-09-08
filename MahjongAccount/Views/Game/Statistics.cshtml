@@ -34,7 +34,7 @@
         }
 
         .stats-container {
-            padding-bottom: 80px;
+            padding-bottom: 100px;
             background-color: #f5f5f5;
         }
 
@@ -143,23 +143,41 @@
         }
 
         .btn-area {
-            padding: 15px;
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #fff;
-            border-top: 1px solid #eee;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            display: flex;
+            gap: 10px;
             z-index: 10;
         }
 
         .weui-btn {
             width: 100%;
         }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+            font-size: 20px;
+        }
+
+        .weui-tabbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div class="page-title">
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fa fa-arrow-left"></i>
+        </a>
         牌局统计 #@Model.Game?.Id
     </div>
 
@@ -274,9 +292,24 @@
             </div>
         </div>
 
-        <div class="btn-area">
+        <div class="btn-area" style="margin-bottom: 10px;">
             <a href="javascript:history.back()" class="weui-btn weui-btn_primary">
                 返回上一页
+            </a>
+        </div>
+
+        <div class="weui-tabbar">
+            <a href="@Url.Action("Index", "Home", new { autoGoGame = false })" class="weui-tabbar__item">
+                <i class="weui-tabbar__icon fa fa-home"></i>
+                <p class="weui-tabbar__label">首页</p>
+            </a>
+            <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+                <i class="weui-tabbar__icon fa fa-history"></i>
+                <p class="weui-tabbar__label">历史</p>
+            </a>
+            <a href="#" class="weui-tabbar__item weui-bar__item_on">
+                <i class="weui-tabbar__icon fa fa-gamepad"></i>
+                <p class="weui-tabbar__label">牌局</p>
             </a>
         </div>
     }
