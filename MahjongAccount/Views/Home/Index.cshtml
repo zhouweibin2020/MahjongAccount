@@ -324,26 +324,34 @@
             $.showLoading('操作中...');
 
             // 发送请求控制设备
-            $.ajax({
-                url: DEVICE_CONTROL_API,
-                type: 'POST',
-                data: {
-                    action: action,
-                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
-                },
-                success: function(response) {
-                    $.hideLoading();
-                    if (response.success) {
-                        $.toast('操作成功', 'success');
-                    } else {
-                        $.toast(response.message || '操作失败', 'cancel');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $.hideLoading();
-                    $.toast('网络错误，请重试', 'forbidden');
-                    console.error('设备控制失败:', error);
+            const formData = new FormData();
+            formData.append('action', action);
+            formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+
+            fetch(DEVICE_CONTROL_API, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // 检查HTTP响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP错误，状态码: ${response.status}`);
                 }
+                // 解析JSON响应
+                return response.json();
+            })
+            .then(data => {
+                $.hideLoading();
+                if (data.success) {
+                    $.toast('操作成功', 'success');
+                } else {
+                    $.toast(data.message || '操作失败', 'cancel');
+                }
+            })
+            .catch(error => {
+                $.hideLoading();
+                $.toast('网络错误，请重试', 'forbidden');
+                console.error('设备控制失败:', error);
             });
         }
 

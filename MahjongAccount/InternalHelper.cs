@@ -38,6 +38,9 @@ namespace MahjongAccount
             if (string.IsNullOrEmpty(ipAddress))
                 return false;
 
+            if ("127.0.0.1".Equals(ipAddress))
+                return true;
+
             // 尝试解析IP地址
             if (!IPAddress.TryParse(ipAddress, out var ip))
                 return false;

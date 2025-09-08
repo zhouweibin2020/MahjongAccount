@@ -364,69 +364,72 @@ namespace MahjongAccount.Controllers
                 if (totalPlayers > 0 && totalPlayers == readyPlayers)
                 {
                     var game = await _context.Games.FindAsync(input.GameId);
-                    game.Status = "ended";
-                    game.EndedAt = DateTime.Now;
-                    _context.Games.Update(game);
-
-                    var gameResults = new List<GameResult>();
-                    // 计算每个玩家的结果
-                    foreach (var player in allPlayers)
+                    if (game is not null && game.Status != "ended") //避免重复结算
                     {
-                        var totalWin = await _context.Transactions
-                            .Where(t => t.GameId == input.GameId && t.ToUserId == player.UserId)
-                            .SumAsync(t => t.Amount);
+                        game.Status = "ended";
+                        game.EndedAt = DateTime.Now;
+                        _context.Games.Update(game);
 
-                        var totalLose = await _context.Transactions
-                            .Where(t => t.GameId == input.GameId && t.FromUserId == player.UserId)
-                            .SumAsync(t => t.Amount);
-
-                        var netResult = totalWin - totalLose;
-
-                        gameResults.Add(new GameResult
+                        var gameResults = new List<GameResult>();
+                        // 计算每个玩家的结果
+                        foreach (var player in allPlayers)
                         {
-                            GameId = input.GameId,
-                            UserId = player.UserId,
-                            TotalWin = totalWin,
-                            TotalLose = totalLose,
-                            NetResult = netResult
-                        });
-                    }
-                    await _context.GameResults.AddRangeAsync(gameResults);
+                            var totalWin = await _context.Transactions
+                                .Where(t => t.GameId == input.GameId && t.ToUserId == player.UserId)
+                                .SumAsync(t => t.Amount);
 
-                    // 计算结算转账记录
-                    var playersNet = gameResults.Select(gr => new { gr.UserId, gr.NetResult });
+                            var totalLose = await _context.Transactions
+                                .Where(t => t.GameId == input.GameId && t.FromUserId == player.UserId)
+                                .SumAsync(t => t.Amount);
 
-                    var winners = playersNet.Where(p => p.NetResult > 0).ToList();
-                    var losers = playersNet.Where(p => p.NetResult < 0)
-                        .Select(p => new LoserInfoDto { UserId = p.UserId, NeedPay = -p.NetResult })
-                        .ToList();
+                            var netResult = totalWin - totalLose;
 
-                    foreach (var winner in winners)
-                    {
-                        var needReceive = winner.NetResult;
-                        while (needReceive > 0 && losers.Any())
-                        {
-                            var currentLoser = losers[0];
-                            var transferAmount = Math.Min(currentLoser.NeedPay, needReceive);
-
-                            _context.SettlementTransactions.Add(new SettlementTransaction
+                            gameResults.Add(new GameResult
                             {
                                 GameId = input.GameId,
-                                FromUserId = currentLoser.UserId,
-                                ToUserId = winner.UserId,
-                                Amount = transferAmount,
-                                CreatedAt = DateTime.Now
+                                UserId = player.UserId,
+                                TotalWin = totalWin,
+                                TotalLose = totalLose,
+                                NetResult = netResult
                             });
-
-                            currentLoser.NeedPay -= transferAmount;
-                            needReceive -= transferAmount;
-
-                            if (currentLoser.NeedPay == 0)
-                                losers.RemoveAt(0);
                         }
-                    }
+                        await _context.GameResults.AddRangeAsync(gameResults);
 
-                    await _context.SaveChangesAsync();
+                        // 计算结算转账记录
+                        var playersNet = gameResults.Select(gr => new { gr.UserId, gr.NetResult });
+
+                        var winners = playersNet.Where(p => p.NetResult > 0).ToList();
+                        var losers = playersNet.Where(p => p.NetResult < 0)
+                            .Select(p => new LoserInfoDto { UserId = p.UserId, NeedPay = -p.NetResult })
+                            .ToList();
+
+                        foreach (var winner in winners)
+                        {
+                            var needReceive = winner.NetResult;
+                            while (needReceive > 0 && losers.Any())
+                            {
+                                var currentLoser = losers[0];
+                                var transferAmount = Math.Min(currentLoser.NeedPay, needReceive);
+
+                                _context.SettlementTransactions.Add(new SettlementTransaction
+                                {
+                                    GameId = input.GameId,
+                                    FromUserId = currentLoser.UserId,
+                                    ToUserId = winner.UserId,
+                                    Amount = transferAmount,
+                                    CreatedAt = DateTime.Now
+                                });
+
+                                currentLoser.NeedPay -= transferAmount;
+                                needReceive -= transferAmount;
+
+                                if (currentLoser.NeedPay == 0)
+                                    losers.RemoveAt(0);
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
                 }
 
                 // 通知房间内用户
@@ -547,6 +550,54 @@ namespace MahjongAccount.Controllers
                 _logger.LogError(ex, "加载牌局结果失败 - 牌局ID: {GameId}, 用户ID: {UserId}", gameId, userId);
                 return RedirectToAction("SimpleError", "Home", new { message = "加载结果失败" });
             }
+        }
+         
+        /// <summary>
+        /// 处理换风请求
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ChangeWind([FromBody] ChangeWindRequest request)
+        {
+            // 查找游戏
+            var game = await _context.Games.FindAsync(request.GameId);
+            if (game == null)
+            {
+                return NotFound(new { success = false, message = "找不到指定的牌局" });
+            }
+
+            // 检查游戏状态是否为进行中
+            if (game.Status != "ongoing")
+            {
+                return BadRequest(new { success = false, message = "只有进行中的牌局才能换风" });
+            }
+
+            // 获取所有玩家并更新他们的风向（顺时针轮换）
+            var players = _context.GamePlayers
+                .Where(gp => gp.GameId == request.GameId)
+                .OrderBy(gp => gp.Id)
+                .ToList();
+
+            if (players.Any())
+            {
+                var selected = new List<string>();
+                // 按顺时针方向更新每个玩家的风向
+                foreach (var player in players)
+                {
+                    player.Direction = GetRandomDirection(selected);
+                    _context.GamePlayers.Update(player);
+                    selected.Add(player.Direction);
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            // 通过SignalR通知所有客户端风向已变更
+            await _hubContext.Clients.Group($"Game_{request.GameId}").SendAsync("WindChanged", new
+            {
+                gameId = request.GameId,
+                newDirections = players.Select(f => new { f.UserId, f.Direction })
+            });
+
+            return Ok(new { success = true });
         }
     }
 }
