@@ -375,6 +375,22 @@
                 opacity: 0.8;
                 cursor: not-allowed;
             }
+
+        .stats-btn {
+            background-color: #2D8CF0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            margin: 20px;
+        }
+
+            .stats-btn:active {
+                background-color: #1C74D4;
+            }
     </style>
 </head>
 
@@ -419,6 +435,9 @@
                     Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
                             ¥@Model.PlayerBalances[Model.CurrentUserId]
                         </span>
+                        <a href="@Url.Action("Statistics", "Game", new { gameId = Model.Game.Id, userId = Model.CurrentUserId })" class="stats-btn">
+                            <i class="fa fa-bar-chart"></i> 统计
+                        </a>
                     </div>
                 }
 
@@ -474,9 +493,11 @@
                                 foreach (var player in otherPlayers)
                                 {
                                     <div class="other-player-item">
-                                        <img src="@(!string.IsNullOrEmpty(player.AvatarUrl) ? player.AvatarUrl :
-                        $"https://picsum.photos/60/60?random={player.Id}")" alt="@player.Nickname 的头像"
-                                             class="player-avatar">
+                                        <a href="@Url.Action("Statistics", "Game", new { gameId = Model.Game.Id, userId = player.Id })">
+                                            <img src="@(!string.IsNullOrEmpty(player.AvatarUrl) ? player.AvatarUrl : $"https://picsum.photos/60/60?random={player.Id}")" 
+                                            alt="@player.Nickname 的头像" class="player-avatar">
+                                        </a>
+                                        
 
                                         <div class="player-info">
                                             <div class="player-name">

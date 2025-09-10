@@ -610,7 +610,7 @@ namespace MahjongAccount.Controllers
             {
                 // 获取牌局信息
                 var game = await _context.Games
-                    .FirstOrDefaultAsync(g => g.Id == gameId && g.Status == "ended");
+                    .FirstOrDefaultAsync(g => g.Id == gameId);
 
                 if (game == null)
                     return RedirectToAction("WeUIError", "Home", new { title = "未找到牌局" });
@@ -668,13 +668,40 @@ namespace MahjongAccount.Controllers
                     .OrderByDescending(dto => dto.Amount)
                     .ToArrayAsync();
 
+                // 先获取按时间排序的交易数据
+                var transactions = await _context.Transactions
+                    .Where(t => t.GameId == gameId && (t.FromUserId == userId || t.ToUserId == userId))
+                    .Select(d => new
+                    {
+                        // 计算单次交易对用户的金额影响（支出为负，收入为正）
+                        Amount = d.FromUserId == userId ? -d.Amount : d.Amount,
+                        CreatedAt = d.CreatedAt
+                    })
+                    .OrderBy(t => t.CreatedAt)
+                    .ToListAsync();
+
+                // 计算累计值并转换为CurveDataDto
+                var curveData = new List<CurveDataDto>();
+                int cumulativeAmount = 0;
+
+                foreach (var transaction in transactions)
+                {
+                    cumulativeAmount += transaction.Amount;
+                    curveData.Add(new CurveDataDto
+                    {
+                        Amount = cumulativeAmount,  // 累计金额
+                        CreatedAt = transaction.CreatedAt
+                    });
+                }
+
                 // 构建视图模型
                 var viewModel = new StatisticsViewModel
                 {
                     Game = game,
                     LoseTotalAmountStatistics = loseTotalAmountStatistics,
                     WinTotalAmountStatistics = winTotalAmountStatistics,
-                    AmountCountStatistics = amountCountStatistics
+                    AmountCountStatistics = amountCountStatistics,
+                    CurveDatas = curveData.ToArray()
                 };
 
                 return View(viewModel);

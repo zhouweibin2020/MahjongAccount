@@ -12,6 +12,8 @@
     <link href="~/lib/weui.min.css" rel="stylesheet" />
     <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
     <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <!-- 引入Chart.js用于绘制曲线图 -->
+    <script src="~/js/chart.umd.min.js"></script>
     <script src="~/lib/jquery-2.1.4.js"></script>
     <script src="~/js/jquery-weui.js"></script>
     <style>
@@ -56,6 +58,9 @@
         .stats-list {
             background-color: #fff;
             margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .stats-item {
@@ -171,6 +176,39 @@
             bottom: 0;
             width: 100%;
         }
+
+        /* 曲线图容器样式 */
+        .chart-container {
+            padding: 15px;
+            background-color: #fff;
+            height: 300px;
+            position: relative;
+        }
+
+        #curveChart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -200,6 +238,26 @@
         </div>
 
         <div class="stats-container">
+            <!-- 累计金额曲线图 -->
+            <div class="stats-list">
+                <div class="section-title">
+                    <i class="fa fa-line-chart"></i> 累计金额变化趋势
+                </div>
+                @if (Model.CurveDatas != null && Model.CurveDatas.Any())
+                {
+                    <div class="chart-container">
+                        <canvas id="curveChart"></canvas>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fa fa-area-chart empty-icon"></i>
+                        <p>暂无金额变化数据</p>
+                    </div>
+                }
+            </div>
+
             <!-- 赢家金额统计 -->
             <div class="stats-list">
                 <div class="section-title">
@@ -313,5 +371,117 @@
             </a>
         </div>
     }
+
+    <script>
+        // 页面加载完成后初始化图表
+        $(document).ready(function() {
+            // 准备图表数据
+            var curveData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CurveDatas));
+
+            if (curveData && curveData.length >0){
+                // 提取时间标签和金额值
+                var labels = curveData.map(item => {
+                    var date = new Date(item.CreatedAt);
+                    // 格式化时间为 HH:MM
+                    return date.getHours().toString().padStart(2, '0') + ':' +
+                           date.getMinutes().toString().padStart(2, '0');
+                });
+
+                var values = curveData.map(item => item.Amount);
+
+                // 找到最大值和最小值，用于设置Y轴范围
+                var maxValue = Math.max(...values);
+                var minValue = Math.min(...values);
+                var padding = Math.max(Math.abs(maxValue), Math.abs(minValue)) * 0.1;
+                var yMin = Math.floor(minValue - padding);
+                var yMax = Math.ceil(maxValue + padding);
+
+                // 获取图表上下文
+                var ctx = document.getElementById('curveChart').getContext('2d');
+
+                // 创建图表
+                var chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '累计金额',
+                                data: values,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#3b82f6',
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                                tension: 0.3,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                padding: 10,
+                                titleFont: {
+                                    size: 14
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        var value = context.raw;
+                                        var sign = value >= 0 ? '+' : '';
+                                        return `累计金额: ${sign}¥${value}`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: 6,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            y: {
+                                min: yMin,
+                                max: yMax,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '¥' + value;
+                                    },
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

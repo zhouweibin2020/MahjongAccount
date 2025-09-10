@@ -21,6 +21,11 @@
         /// 金额计次统计
         /// </summary>
         public AmountCountStatisticsDto[] AmountCountStatistics { get; set; }
+
+        /// <summary>
+        /// 曲线数据
+        /// </summary>
+        public CurveDataDto[] CurveDatas { get; set; }
     }
 
     public class TotalAmountDto
@@ -52,5 +57,21 @@
         /// 输次
         /// </summary>
         public int LoseCount { get; set; }
+    }
+
+    /// <summary>
+    /// 曲线数据
+    /// </summary>
+    public class CurveDataDto
+    {
+        /// <summary>
+        /// 金额
+        /// </summary>
+        public int Amount { get; set; }
+        
+        /// <summary>
+        /// 创建事件
+        /// </summary>
+        public DateTime CreatedAt { get; set; }
     }
 }
