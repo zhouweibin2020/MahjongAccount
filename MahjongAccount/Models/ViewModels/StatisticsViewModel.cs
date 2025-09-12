@@ -65,6 +65,11 @@
     public class CurveDataDto
     {
         /// <summary>
+        /// 玩家
+        /// </summary>
+        public string PlayerName { get; set; }
+
+        /// <summary>
         /// 金额
         /// </summary>
         public int Amount { get; set; }

@@ -216,6 +216,22 @@
             color: #333;
             font-size: 20px;
         }
+
+        .curve-comparison-btn {
+            background-color: #FFC633;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            margin-left: 20px;
+        }
+
+            .curve-comparison-btn:active {
+                background-color: #FFB800;
+            }
     </style>
 </head>
 <body>
@@ -251,7 +267,12 @@
 
             <!-- 玩家结果列表容器 -->
             <div class="list-container">
-                <div class="section-title">所有玩家结果</div>
+                <div class="section-title">
+                    所有玩家结果
+                    <a href="@Url.Action("CurveComparison", "Game", new { gameId = Model.Game.Id })" class="curve-comparison-btn">
+                        <i class="fa fa-line-chart"></i> 曲线对比
+                    </a>
+                </div>
                 @foreach (var result in Model.Results)
                 {
                     <div class="player-result-item @(result.UserId == Model.CurrentUserResult?.UserId ? "current-user" : "")">

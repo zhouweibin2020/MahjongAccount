@@ -708,8 +708,75 @@ namespace MahjongAccount.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "加载牌局结果失败 - 牌局ID: {GameId}, 用户ID: {UserId}", gameId, userId);
-                return RedirectToAction("SimpleError", "Home", new { message = "加载结果失败" });
+                _logger.LogError(ex, "加载牌局统计失败 - 牌局ID: {GameId}, 用户ID: {UserId}", gameId, userId);
+                return RedirectToAction("SimpleError", "Home", new { message = "加载牌局统计失败" });
+            }
+        }
+
+        /// <summary>
+        /// 曲线对比
+        /// </summary>
+        /// <param name="gameId">牌局ID</param>
+        /// <returns></returns>
+        public async Task<IActionResult> CurveComparison(int gameId)
+        {
+            if (!IsUserLoggedIn())
+                return RedirectToAction("UserSelect", "User");
+
+            try
+            {
+                // 获取牌局信息
+                var game = await _context.Games
+                    .FirstOrDefaultAsync(g => g.Id == gameId);
+
+                if (game == null)
+                    return RedirectToAction("WeUIError", "Home", new { title = "未找到牌局" });
+
+                // 获取牌局的流水
+                var transactions = await _context.Transactions.Where(t => t.GameId == gameId).ToArrayAsync();
+
+                // 获取牌局人员
+                var plays = await _context.GamePlayers.Where(p => p.GameId == gameId).Include(p => p.User).ToArrayAsync();
+
+                // 计算累计值并转换为CurveDataDto
+                var curveData = new List<CurveDataDto>();
+                foreach (var player in plays)
+                {
+                    var playTransactions = transactions
+                        .Where(t=> t.FromUserId == player.UserId || t.ToUserId == player.UserId)
+                        .Select(d => new
+                        {
+                            // 计算单次交易对用户的金额影响（支出为负，收入为正）
+                            Amount = d.FromUserId == player.UserId ? -d.Amount : d.Amount,
+                            CreatedAt = d.CreatedAt
+                        }).OrderBy(t => t.CreatedAt).ToArray();
+
+                    int cumulativeAmount = 0;
+                    foreach (var transaction in playTransactions)
+                    {
+                        cumulativeAmount += transaction.Amount;
+                        curveData.Add(new CurveDataDto
+                        {
+                            PlayerName = player.User.Nickname,
+                            Amount = cumulativeAmount,  // 累计金额
+                            CreatedAt = transaction.CreatedAt
+                        });
+                    }
+                }
+
+                // 构建视图模型
+                var viewModel = new StatisticsViewModel
+                {
+                    Game = game,
+                    CurveDatas = curveData.ToArray()
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "加载曲线对比失败 - 牌局ID: {GameId}", gameId);
+                return RedirectToAction("SimpleError", "Home", new { message = "加载曲线对比失败" });
             }
         }
     }

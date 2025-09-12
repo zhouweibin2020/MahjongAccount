@@ -1,0 +1,568 @@
+﻿@model MahjongAccount.Models.ViewModels.StatisticsViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>曲线对比 - 麻将记账</title>
+    <link href="~/lib/weui.min.css" rel="stylesheet" />
+    <link href="~/css/jquery-weui.min.css" rel="stylesheet" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <!-- 引入Chart.js用于绘制曲线图 -->
+    <script src="~/js/chart.umd.min.js"></script>
+    <script src="~/lib/jquery-2.1.4.js"></script>
+    <script src="~/js/jquery-weui.js"></script>
+    <style>
+        .page-title {
+            text-align: center;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            background-color: #fff;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+            font-size: 20px;
+        }
+
+        .game-info {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #666;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+        }
+
+        .content-container {
+            padding-bottom: 60px;
+            background-color: #f5f5f5;
+        }
+
+        .chart-container {
+            margin: 15px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            height: 400px;
+        }
+
+        #comparisonChart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 10px 15px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+            .legend-item:hover {
+                background-color: #f5f5f5;
+            }
+
+            .legend-item.active {
+                background-color: rgba(230, 92, 0, 0.1);
+            }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        .players-summary {
+            margin: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .section-title {
+            padding: 12px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            background-color: #f9f9f9;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+            .section-title i {
+                margin-right: 8px;
+                color: #E65C00;
+            }
+
+        .player-summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+            .player-summary-item:last-child {
+                border-bottom: none;
+            }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .player-name {
+            font-size: 16px;
+        }
+
+        .final-amount {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .win {
+            color: #E64340;
+        }
+
+        .lose {
+            color: #1AAD19;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            background-color: #fff;
+            margin: 15px;
+            border-radius: 8px;
+        }
+
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .weui-tabbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-title">
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fa fa-arrow-left"></i>
+        </a>
+        玩家曲线对比
+    </div>
+
+    @if (Model.Game == null)
+    {
+        <div class="empty-state">
+            <i class="fa fa-exclamation-circle empty-icon"></i>
+            <p>无法获取牌局信息</p>
+            <a href="@Url.Action("Index", "Home")" class="weui-btn weui-btn_primary" style="margin-top: 20px;">
+                返回首页
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="game-info">
+            牌局名称: @Model.Game.Name<br>
+            牌局编号: #@Model.Game.Id<br>
+            时间: @Model.Game.CreatedAt.ToString("yyyy-MM-dd HH:mm") - @(Model.Game.EndedAt.HasValue ? Model.Game.EndedAt.Value.ToString("HH:mm") : "进行中")
+        </div>
+
+        <div class="content-container">
+            @if (Model.CurveDatas != null && Model.CurveDatas.Any())
+            {
+                <!-- 曲线图容器 -->
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+
+                <!-- 图例 -->
+                <div class="chart-legend" id="chartLegend">
+                    <!-- 图例将通过JS动态生成 -->
+                </div>
+
+                <!-- 玩家最终金额汇总 -->
+                <div class="players-summary">
+                    <div class="section-title">
+                        <i class="fa fa-trophy"></i> 最终结果
+                    </div>
+                    <div id="playersSummaryContainer">
+                        <!-- 玩家汇总信息将通过JS动态生成 -->
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa fa-line-chart empty-icon"></i>
+                    <p>暂无数据可显示</p>
+                    <p style="margin-top: 10px; font-size: 14px;">牌局中还没有交易记录</p>
+                    <button class="weui-btn weui-btn_default" onclick="javascript:history.back()" style="margin-top: 20px;">
+                        返回牌局
+                    </button>
+                </div>
+            }
+        </div>
+
+        <div class="weui-tabbar">
+            <a href="@Url.Action("Index", "Home", new { autoGoGame = false })" class="weui-tabbar__item">
+                <i class="weui-tabbar__icon fa fa-home"></i>
+                <p class="weui-tabbar__label">首页</p>
+            </a>
+            <a href="@Url.Action("History", "Home")" class="weui-tabbar__item">
+                <i class="weui-tabbar__icon fa fa-history"></i>
+                <p class="weui-tabbar__label">历史</p>
+            </a>
+            <a href="#" class="weui-tabbar__item weui-bar__item_on">
+                <i class="weui-tabbar__icon fa fa-line-chart"></i>
+                <p class="weui-tabbar__label">对比</p>
+            </a>
+        </div>
+    }
+
+    <script>
+        // 页面加载完成后初始化图表
+        $(document).ready(function() {
+            // 从模型获取数据
+            var curveData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.CurveDatas));
+            var gameId = @Model.Game.Id;
+            var currentChart = null;
+
+            // 准备图表数据
+            function prepareChartData() {
+                if (!curveData || !curveData.length) return null;
+
+                // 按玩家分组
+                var playerData = {};
+                curveData.forEach(item => {
+                    if (!playerData[item.PlayerName]) {
+                        playerData[item.PlayerName] = [];
+                    }
+                    playerData[item.PlayerName].push({
+                        amount: item.Amount,
+                        createdAt: item.CreatedAt
+                    });
+                });
+
+                // 获取所有唯一的时间点并排序
+                var allTimes = [...new Set(curveData.map(item => item.CreatedAt))].sort();
+
+                // 格式化时间标签
+                var timeLabels = allTimes.map(time => {
+                    var date = new Date(time);
+                    return date.getHours().toString().padStart(2, '0') + ':' +
+                           date.getMinutes().toString().padStart(2, '0');
+                });
+
+                return {
+                    playerData: playerData,
+                    timeLabels: timeLabels,
+                    allTimes: allTimes
+                };
+            }
+
+            // 获取用户对应的颜色
+            function getUserColor(index) {
+                // 定义一组区分度较高的颜色
+                var colors = [
+                    '#E65C00', '#007AFF', '#7B61FF', '#C0C0C0', '#FF2D55', '#FF9500'
+                ];
+                return colors[index % colors.length];
+            }
+
+            function getUserColor2(index) {
+                // 定义一组区分度较高的颜色
+                var colors = [
+                    '#FFD700', '#C0C0C0', '#CD7F32', '#007AFF', '#FF2D55', '#5856D6'
+                ];
+                return colors[index % colors.length];
+            }
+
+            // 生成图表图例
+            function generateLegend(players) {
+                var legendContainer = $('#chartLegend');
+                legendContainer.empty();
+
+                players.forEach((player, index) => {
+                    var color = getUserColor(index);
+
+                    var legendItem = $(`
+                        <div class="legend-item active" data-player="${player}">
+                            <div class="legend-color" style="background-color: ${color};"></div>
+                            <span>${player}</span>
+                        </div>
+                    `);
+
+                    legendItem.click(function() {
+                        $(this).toggleClass('active');
+                        var isActive = $(this).hasClass('active');
+
+                        // 更新图表显示状态
+                        if (currentChart) {
+                            var datasetIndex = currentChart.data.datasets.findIndex(ds => ds.label === player);
+                            if (datasetIndex !== -1) {
+                                currentChart.data.datasets[datasetIndex].hidden = !isActive;
+                                currentChart.update();
+                            }
+                        }
+                    });
+
+                    legendContainer.append(legendItem);
+                });
+            }
+
+            // 生成玩家最终结果汇总
+            function generatePlayersSummary(playerData) {
+                var container = $('#playersSummaryContainer');
+                container.empty();
+
+                // 提取每个玩家的最终金额并排序
+                var playerFinals = [];
+                for (var player in playerData) {
+                    var dataPoints = playerData[player];
+                    if (dataPoints.length > 0) {
+                        // 获取最后一个数据点的金额
+                        var finalAmount = dataPoints[dataPoints.length - 1].amount;
+                        playerFinals.push({
+                            name: player,
+                            amount: finalAmount
+                        });
+                    }
+                }
+
+                // 按金额从高到低排序
+                playerFinals.sort((a, b) => b.amount - a.amount);
+
+                // 生成DOM元素
+                playerFinals.forEach((player, index) => {
+                    var color = getUserColor2(index);
+                    var amountClass = player.amount > 0 ? 'win' : 'lose';
+                    var amountSign = player.amount >= 0 ? '+' : '';
+
+                    var summaryItem = $(`
+                        <div class="player-summary-item">
+                            <div class="player-info">
+                                <div class="legend-color" style="background-color: ${color}; margin-right: 10px;"></div>
+                                <div class="player-name">${player.name}</div>
+                            </div>
+                            <div class="final-amount ${amountClass}">${amountSign}¥${player.amount}</div>
+                        </div>
+                    `);
+
+                    container.append(summaryItem);
+                });
+            }
+
+            // 渲染图表
+            function renderChart() {
+                var chartData = prepareChartData();
+                if (!chartData) return;
+
+                var { playerData, timeLabels, allTimes } = chartData;
+                var players = Object.keys(playerData);
+
+                // 准备数据集
+                var datasets = [];
+
+                players.forEach((player, index) => {
+                    var color = getUserColor(index);
+                    var dataPoints = playerData[player];
+
+                    // 创建与时间标签对应的金额数组（填充缺失的时间点）
+                    var amounts = [];
+                    var currentAmount = 0;
+                    var dataIndex = 0;
+
+                    allTimes.forEach(time => {
+                        if (dataIndex < dataPoints.length && dataPoints[dataIndex].createdAt === time) {
+                            currentAmount = dataPoints[dataIndex].amount;
+                            dataIndex++;
+                        }
+                        amounts.push(currentAmount);
+                    });
+
+                    // 移除渐变填充，只保留曲线
+                    datasets.push({
+                        label: player,
+                        data: amounts,
+                        borderColor: color,
+                        borderWidth: 2.5,
+                        pointBackgroundColor: color,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: false  // 关键修改：不填充曲线下方区域
+                    });
+                });
+
+                // 添加0坐标参考线（平衡点）
+                datasets.push({
+                    label: '平衡点',
+                    data: timeLabels.map(() => 0),
+                    borderColor: '#e5e7eb',
+                    borderWidth: 1.5,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0,
+                    order: 100 // 确保参考线在最底层
+                });
+
+                // 计算Y轴范围，增加一些边距使图表更美观
+                var allValues = [];
+                datasets.forEach(dataset => {
+                    if (dataset.label !== '平衡点') { // 排除平衡点线
+                        allValues = allValues.concat(dataset.data);
+                    }
+                });
+
+                var yMin = 0;
+                var yMax = 0;
+                if (allValues.length > 0) {
+                    var maxValue = Math.max(...allValues);
+                    var minValue = Math.min(...allValues);
+                    var padding = Math.max(Math.abs(maxValue), Math.abs(minValue)) * 0.15;
+                    yMin = Math.floor(minValue - padding);
+                    yMax = Math.ceil(maxValue + padding);
+                }
+
+                // 销毁现有图表
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+
+                // 创建图表
+                var ctx = document.getElementById('comparisonChart').getContext('2d');
+                currentChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timeLabels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        var value = context.raw;
+                                        var datasetLabel = context.dataset.label;
+                                        if (datasetLabel === '平衡点') return '';
+
+                                        var sign = value >= 0 ? '+' : '';
+                                        return `${datasetLabel}: ${sign}¥${value}`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxRotation: 0,
+                                    autoSkip: true,
+                                    maxTicksLimit: 8,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            y: {
+                                min: yMin,
+                                max: yMax,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '¥' + value;
+                                    },
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+
+                // 生成图例和玩家汇总
+                generateLegend(players);
+                generatePlayersSummary(playerData);
+            }
+
+            // 初始化图表
+            if (curveData && curveData.length) {
+                renderChart();
+            }
+        });
+    </script>
+</body>
+</html>
