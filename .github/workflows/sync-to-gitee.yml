@@ -1,0 +1,19 @@
+name: Sync GitHub to Gitee
+on:
+  push:
+    branches: [ main, master ]  # 监听主分支推送
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync to Gitee
+        uses: Yikun/hub-mirror-action@master
+        with:
+          src: github/${{ github.repository_owner }}
+          dst: gitee/${{ secrets.GITEE_USER }}
+          dst_token: ${{ secrets.GITEE_TOKEN }}
+          # 如需使用SSH方式，取消下面两行注释
+          # dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+          static_list: ${{ github.event.repository.name }}
