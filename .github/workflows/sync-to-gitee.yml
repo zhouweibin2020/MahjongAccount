@@ -1,8 +1,8 @@
 name: Sync GitHub to Gitee
 on:
   push:
-    branches: [ main, master ]  # 监听主分支推送
-  workflow_dispatch:  # 允许手动触发
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -11,19 +11,12 @@ jobs:
       - name: Sync to Gitee
         uses: Yikun/hub-mirror-action@master
         with:
-          # 源仓库：GitHub用户名/仓库名
-          src: github/zhouweibin2020
-          # 目标仓库：Gitee用户名
-          dst: gitee/${{ secrets.GITEE_USER }}
-          # Gitee访问令牌
-          dst_token: ${{ secrets.GITEE_TOKEN }}
-          # 要同步的仓库名称
-          static_list: "MahjongAccount"
-          # 账户类型，个人仓库用user，组织用org
-          account_type: user
-          # 克隆方式
-          clone_style: "https"
-          # 强制更新
+          src: github/zhouweibin2020  # 源：GitHub用户名
+          dst: gitee/zhouweibin95  
+          
+          dst_token: ${{ secrets.GITEE_TOKEN }}  # Gitee令牌（必须有repo权限）
+          static_list: "MahjongAccount"  # 要同步的仓库名
+          account_type: user  # 个人仓库
+          clone_style: https
           force_update: true
-          # 调试模式
           debug: true
