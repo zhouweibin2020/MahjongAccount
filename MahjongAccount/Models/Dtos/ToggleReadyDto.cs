@@ -11,5 +11,10 @@
         /// 是否准备
         /// </summary>
         public bool IsReady { get; set; }
+
+        /// <summary>
+        /// 是否直接结算
+        /// </summary>
+        public bool IsAllReady { get; set; }
     }
 }

@@ -341,16 +341,29 @@ namespace MahjongAccount.Controllers
 
             try
             {
-                var gamePlayer = await _context.GamePlayers
-                    .FirstOrDefaultAsync(gp => gp.GameId == input.GameId && gp.UserId == userId);
+                if (input.IsAllReady)
+                {
+                    var gamePlayers = await _context.GamePlayers.Where(f => f.GameId == input.GameId).ToArrayAsync();
+                    foreach (var player in gamePlayers)
+                    {
+                        player.IsReady = true;
+                        _context.GamePlayers.Update(player);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    var gamePlayer = await _context.GamePlayers
+                        .FirstOrDefaultAsync(gp => gp.GameId == input.GameId && gp.UserId == userId);
 
-                if (gamePlayer == null)
-                    return Json(new { success = false, message = "当前牌局查找失败" });
+                    if (gamePlayer == null)
+                        return Json(new { success = false, message = "当前牌局查找失败" });
 
-                // 更新准备状态
-                gamePlayer.IsReady = input.IsReady;
-                _context.GamePlayers.Update(gamePlayer);
-                await _context.SaveChangesAsync();
+                    // 更新准备状态
+                    gamePlayer.IsReady = input.IsReady;
+                    _context.GamePlayers.Update(gamePlayer);
+                    await _context.SaveChangesAsync();
+                }
 
                 // 检查是否所有玩家都已准备
                 var allPlayers = await _context.GamePlayers

@@ -340,6 +340,15 @@
                 flex: 0 0 auto;
             }
 
+        .all-ready-btn {
+            margin-left: 10px;
+            background-color: #FF5722 !important;
+        }
+
+            .all-ready-btn:active{
+                background-color: #FFAD92 !important;
+            }
+
         .ready-btn {
             background-color: #09BB07;
             color: white;
@@ -498,6 +507,7 @@
                                     }
                                 </button>
                             </div>
+                            <button type="button" id="allReadyButton" class="ready-btn all-ready-btn" data-game-id="@Model.Game.Id">结算</button>
                         }
                     </div>
                 }
@@ -841,6 +851,8 @@
 
             // 初始化准备按钮事件
             initReadyButton();
+            // 初始化结算按钮事件
+            initAllReadyButton();
 
             // 初始化查看结算按钮事件（如果牌局已结束）
         @if (Model.Game.Status == "ended")
@@ -1258,6 +1270,56 @@
                         .html(originalHtml);
                     $.toptip('操作失败，请重试', 'error');
                 } finally {
+                    $btn.removeClass('loading');
+                }
+            });
+        }
+
+        function initAllReadyButton(){
+            const $allReadyButton = $('#allReadyButton');
+            if ($allReadyButton.length === 0) return;
+
+            $allReadyButton.off('click').on('click', async function() {
+                const $btn = $(this);
+                const gameId = parseInt($btn.data('game-id'));
+
+                // 防止重复点击
+                if ($btn.hasClass('loading')) {
+                    return;
+                }
+
+                // 保存原始内容和状态
+                const originalHtml = $btn.html();
+                const originalClasses = $btn.attr('class');
+
+                // 显示加载状态
+                $btn.addClass('loading')
+                    .html('<i class="fa fa-spinner fa-spin"></i><span>处理中...</span>');
+
+                try {
+                    const response = await fetch('@Url.Action("ToggleReady", "Game")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            gameId: gameId,
+                            isAllReady: true
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        $.toptip('成功结算', 'success');
+                    } else {
+                        $.toptip('操作失败: ' + (result.message || '未知错误'), 'error');
+                    }
+                } catch (error) {
+                    console.error('准备状态更新失败:', error);
+                    $.toptip('操作失败，请重试', 'error');
+                } finally {
+                    // 恢复原始状态
+                    $btn.attr('class', originalClasses)
+                        .html(originalHtml);
                     $btn.removeClass('loading');
                 }
             });
