@@ -11,9 +11,19 @@ jobs:
       - name: Sync to Gitee
         uses: Yikun/hub-mirror-action@master
         with:
-          src: github/${{ github.repository_owner }}
+          # 源仓库：GitHub用户名/仓库名
+          src: github/zhouweibin2020
+          # 目标仓库：Gitee用户名
           dst: gitee/${{ secrets.GITEE_USER }}
+          # Gitee访问令牌
           dst_token: ${{ secrets.GITEE_TOKEN }}
-          # 如需使用SSH方式，取消下面两行注释
-          # dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
-          static_list: ${{ github.event.repository.name }}
+          # 要同步的仓库名称
+          static_list: "MahjongAccount"
+          # 账户类型，个人仓库用user，组织用org
+          account_type: user
+          # 克隆方式
+          clone_style: "https"
+          # 强制更新
+          force_update: true
+          # 调试模式
+          debug: true
