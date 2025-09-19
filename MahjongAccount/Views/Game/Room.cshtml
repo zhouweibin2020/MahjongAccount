@@ -270,6 +270,15 @@
             font-size: 16px;
             background-color: #f5f5f5;
             border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .balance-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
         }
 
         .balance-positive {
@@ -345,7 +354,7 @@
             background-color: #FF5722 !important;
         }
 
-            .all-ready-btn:active{
+            .all-ready-btn:active {
                 background-color: #FFAD92 !important;
             }
 
@@ -416,10 +425,42 @@
             .curve-comparison-btn:active {
                 background-color: #FFB800;
             }
+
+        /* 不息屏开关样式 */
+        .keep-screen-on {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+            margin-left: auto;
+        }
+
+        .wake-lock-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #ffd700;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            z-index: 999;
+            display: none;
+            align-items: center;
+        }
+
+            .wake-lock-status i {
+                margin-right: 5px;
+                animation: pulse 1.5s infinite;
+            }
     </style>
 </head>
 
 <body>
+    <div class="wake-lock-status" id="wakeLockStatus">
+        <i class="fa fa-bolt"></i>
+        <span>屏幕常亮中</span>
+    </div>
     <!-- 主内容容器 -->
     <div class="content-container" id="contentContainer">
         @if (Model.Game == null)
@@ -453,19 +494,26 @@
                 @if (Model.PlayerBalances.ContainsKey(Model.CurrentUserId))
                 {
                     <div class="current-user-balance">
-                        <span id="direction_@Model.CurrentUserId" class="direction">@Model.CurrentUser.Direction</span>
-                        你的结余:
-                        <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
-                              class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
-                    Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
-                            ¥@Model.PlayerBalances[Model.CurrentUserId]
-                        </span>
-                        <a href="@Url.Action("Statistics", "Game", new { gameId = Model.Game.Id, userId = Model.CurrentUserId })" class="stats-btn">
-                            <i class="fa fa-bar-chart"></i> 统计
-                        </a>
-                        <a href="@Url.Action("CurveComparison", "Game", new { gameId = Model.Game.Id })" class="curve-comparison-btn">
-                            <i class="fa fa-line-chart"></i> 曲线对比
-                        </a>
+                        <div class="balance-content">
+                            <span id="direction_@Model.CurrentUserId" class="direction">@Model.CurrentUser.Direction</span>
+                            你的结余:
+                            <span id="balance_@Model.CurrentUserId" data-amount="@Model.PlayerBalances[Model.CurrentUserId]"
+                                  class="@(Model.PlayerBalances[Model.CurrentUserId] > 0 ? " balance-positive" :
+                        Model.PlayerBalances[Model.CurrentUserId] < 0 ? "balance-negative" : "balance-zero" )">
+                                ¥@Model.PlayerBalances[Model.CurrentUserId]
+                            </span>
+                            <a href="@Url.Action("Statistics", "Game", new { gameId = Model.Game.Id, userId = Model.CurrentUserId })" class="stats-btn">
+                                <i class="fa fa-bar-chart"></i> 统计
+                            </a>
+                            <a href="@Url.Action("CurveComparison", "Game", new { gameId = Model.Game.Id })" class="curve-comparison-btn">
+                                <i class="fa fa-line-chart"></i> 曲线对比
+                            </a>
+                        </div>
+                        <!-- 不息屏开关 - 确保在最右侧 -->
+                        <label class="keep-screen-on">
+                            <input type="checkbox" class="weui-switch" id="keepScreenOnSwitch" checked>
+                            <span>不息屏</span>
+                        </label>
                     </div>
                 }
 
@@ -523,10 +571,10 @@
                                 {
                                     <div class="other-player-item">
                                         <a href="@Url.Action("Statistics", "Game", new { gameId = Model.Game.Id, userId = player.Id })">
-                                            <img src="@(!string.IsNullOrEmpty(player.AvatarUrl) ? player.AvatarUrl : $"https://picsum.photos/60/60?random={player.Id}")" 
-                                            alt="@player.Nickname 的头像" class="player-avatar">
+                                            <img src="@(!string.IsNullOrEmpty(player.AvatarUrl) ? player.AvatarUrl : $"https://picsum.photos/60/60?random={player.Id}")"
+                                                 alt="@player.Nickname 的头像" class="player-avatar">
                                         </a>
-                                        
+
 
                                         <div class="player-info">
                                             <div class="player-name">
@@ -534,8 +582,8 @@
                                                 @player.Nickname
                                             </div>
                                             <div id="balance_@player.Id" data-amount="@Model.PlayerBalances[player.Id]" class="player-balance @(Model.PlayerBalances.ContainsKey(player.Id) ?
-                                                (Model.PlayerBalances[player.Id] > 0 ? " balance-positive" :
-                            Model.PlayerBalances[player.Id] < 0 ? "balance-negative" : "balance-zero" ) : "" )">
+                                                    (Model.PlayerBalances[player.Id] > 0 ? " balance-positive" :
+                                Model.PlayerBalances[player.Id] < 0 ? "balance-negative" : "balance-zero" ) : "" )">
                                                 @(Model.PlayerBalances.ContainsKey(player.Id) ? $"¥{Model.PlayerBalances[player.Id]}" : "0")
                                             </div>
                                         </div>
@@ -645,6 +693,9 @@
     <script>
         // 等待DOM加载完成
         $(document).ready(function() {
+            // 初始化不息屏功能
+            initKeepScreenOn();
+
             // 从Model初始化当前已在房间的玩家ID集合
             const initialPlayerIds = new Set();
         @foreach (var player in Model.Players)
@@ -860,6 +911,81 @@
             @:initResultButton();
         }
         });
+
+        // 初始化不息屏功能
+        function initKeepScreenOn() {
+            const $switch = $('#keepScreenOnSwitch');
+            const $status = $('#wakeLockStatus');
+            let wakeLock = null;
+
+            // 从本地存储加载上次状态（如果有）
+            const savedState = localStorage.getItem('keepScreenOn_@Model.Game.Id');
+            if (savedState !== null) {
+                $switch.prop('checked', savedState === 'true');
+            }
+
+            // 应用初始状态
+            if ($switch.prop('checked')) {
+                requestWakeLock();
+                $status.show();
+            }
+
+            // 绑定开关事件
+            $switch.on('change', function() {
+                const isChecked = $(this).prop('checked');
+                // 保存状态到本地存储
+                localStorage.setItem('keepScreenOn_@Model.Game.Id', isChecked);
+
+                if (isChecked) {
+                    requestWakeLock();
+                    $status.show();
+                } else {
+                    releaseWakeLock();
+                    $status.hide();
+                }
+            });
+
+            // 请求不息屏锁
+            async function requestWakeLock() {
+                if ('wakeLock' in navigator) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        console.log('不息屏已启用');
+                        // 监听页面可见性变化
+                        document.addEventListener('visibilitychange', handleVisibilityChange);
+                    } catch (err) {
+                        console.error('请求不息屏失败:', err);
+                        $.toptip('无法启用不息屏功能', 'warning');
+                    }
+                } else {
+                    console.warn('浏览器不支持不息屏功能');
+                    $.toptip('您的浏览器不支持不息屏功能', 'info');
+                }
+            }
+
+            // 释放不息屏锁
+            function releaseWakeLock() {
+                if (wakeLock !== null) {
+                    wakeLock.release()
+                        .then(() => {
+                            wakeLock = null;
+                            console.log('不息屏已关闭');
+                            document.removeEventListener('visibilitychange', handleVisibilityChange);
+                        })
+                        .catch(err => {
+                            console.error('释放不息屏锁失败:', err);
+                        });
+                }
+            }
+
+            // 处理页面可见性变化
+            function handleVisibilityChange() {
+                if (document.visibilityState === 'visible' && wakeLock === null && $switch.prop('checked')) {
+                    requestWakeLock();
+                    $status.show();
+                }
+            }
+        }
 
         // 初始化换风按钮
         function initChangeWindButton() {
@@ -1287,41 +1413,48 @@
                 if ($btn.hasClass('loading')) {
                     return;
                 }
+                
+                // 显示确认对话框
+                $.confirm({
+                    title: '确认结算',
+                    text: '确定要结算吗？',
+                    onOK: async function() {
+                        // 保存原始内容和状态
+                        const originalHtml = $btn.html();
+                        const originalClasses = $btn.attr('class');
 
-                // 保存原始内容和状态
-                const originalHtml = $btn.html();
-                const originalClasses = $btn.attr('class');
+                        // 显示加载状态
+                        $btn.addClass('loading')
+                            .html('<i class="fa fa-spinner fa-spin"></i><span>处理中...</span>');
 
-                // 显示加载状态
-                $btn.addClass('loading')
-                    .html('<i class="fa fa-spinner fa-spin"></i><span>处理中...</span>');
+                        try {
+                            const response = await fetch('@Url.Action("ToggleReady", "Game")', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    gameId: gameId,
+                                    isAllReady: true
+                                })
+                            });
 
-                try {
-                    const response = await fetch('@Url.Action("ToggleReady", "Game")', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            gameId: gameId,
-                            isAllReady: true
-                        })
-                    });
+                            const result = await response.json();
 
-                    const result = await response.json();
-
-                    if (result.success) {
-                        $.toptip('成功结算', 'success');
-                    } else {
-                        $.toptip('操作失败: ' + (result.message || '未知错误'), 'error');
+                            if (result.success) {
+                                $.toptip('成功结算', 'success');
+                            } else {
+                                $.toptip('操作失败: ' + (result.message || '未知错误'), 'error');
+                            }
+                        } catch (error) {
+                            console.error('准备状态更新失败:', error);
+                            $.toptip('操作失败，请重试', 'error');
+                        } finally {
+                            // 恢复原始状态
+                            $btn.attr('class', originalClasses)
+                                .html(originalHtml);
+                            $btn.removeClass('loading');
+                        }
                     }
-                } catch (error) {
-                    console.error('准备状态更新失败:', error);
-                    $.toptip('操作失败，请重试', 'error');
-                } finally {
-                    // 恢复原始状态
-                    $btn.attr('class', originalClasses)
-                        .html(originalHtml);
-                    $btn.removeClass('loading');
-                }
+                });
             });
         }
 
