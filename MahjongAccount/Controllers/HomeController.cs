@@ -1,4 +1,5 @@
 ﻿using MahjongAccount.Data;
+using MahjongAccount.Models;
 using MahjongAccount.Models.Dtos;
 using MahjongAccount.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -303,27 +304,41 @@ public class HomeController : Controller
     private async Task<List<UserRankingDto>> GetTimesRankings(DateTime? startDate, DateTime? endDate, int userId)
     {
         return await _context.GameResults
-            .Include(gr => gr.Game)  // 显式加载Game导航属性
+            .Include(gr => gr.Game)
             .Join(
                 _context.Users,
                 gr => gr.UserId,
                 u => u.Id,
                 (gr, user) => new { gr, user }
             )
-            .Where(x => (!startDate.HasValue || x.gr.Game.CreatedAt >= startDate) && (!endDate.HasValue || x.gr.Game.CreatedAt < endDate.Value.AddDays(1)))
+            .Where(x => (!startDate.HasValue || x.gr.Game.CreatedAt >= startDate) &&
+                       (!endDate.HasValue || x.gr.Game.CreatedAt < endDate.Value.AddDays(1)))
             .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.AvatarUrl })
-            .Select(g => new UserRankingDto
+            .Select(g => new
             {
                 UserId = g.Key.Id,
-                IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
                 AvatarUrl = g.Key.AvatarUrl,
                 TotalGameCount = g.Count(),
-                WinGameCount = g.Count(x => x.gr.NetResult > 0)
+                WinGameCount = g.Count(x => x.gr.NetResult > 0),
+                // 先计算分子和分母，避免在同一表达式中多次使用Count()
+                WinCount = g.Count(x => x.gr.NetResult > 0),
+                TotalCount = g.Count()
+            })
+            .Select(g => new UserRankingDto
+            {
+                UserId = g.UserId,
+                IsCurrentUser = g.UserId == userId,
+                Nickname = g.Nickname,
+                AvatarUrl = g.AvatarUrl,
+                TotalGameCount = g.TotalGameCount,
+                WinGameCount = g.WinGameCount,
+                WinRate = g.TotalCount > 0 ? (int)(g.WinCount * 100 / g.TotalCount) : 0
             })
             .OrderByDescending(x => x.WinGameCount)
+            .ThenByDescending(x => x.WinRate)
             .Take(10)
-            .ToListAsync<UserRankingDto>();
+            .ToListAsync();
     }
 
     // 获取单日赢最多数据

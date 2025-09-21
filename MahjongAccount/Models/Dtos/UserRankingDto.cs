@@ -39,5 +39,10 @@
         /// 赢次
         /// </summary>
         public int WinGameCount { get; set; }
+
+        /// <summary>
+        /// 胜率
+        /// </summary>
+        public int WinRate { get; set; }
     }
 }
