@@ -17,198 +17,225 @@
     <script src="~/js/jquery-weui.js"></script>
     <style>
         .page-title {
-            text-align: center;
-            padding: 15px 0;
-            font-size: 18px;
-            font-weight: bold;
-            border-bottom: 1px solid #eee;
-            background-color: #fff;
+        text-align: center;
+        padding: 15px 0;
+        font-size: 18px;
+        font-weight: bold;
+        border-bottom: 1px solid #eee;
+        background-color: #fff;
         }
 
         .rank-tabs {
-            display: flex;
-            border-bottom: 1px solid #eee;
-            background-color: #fff;
+        display: flex;
+        border-bottom: 1px solid #eee;
+        background-color: #fff;
         }
 
         .rank-tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px 0;
-            font-size: 16px;
-            position: relative;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.2s;
+        flex: 1;
+        text-align: center;
+        padding: 12px 0;
+        font-size: 16px;
+        position: relative;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
         }
 
-            .rank-tab.active {
-                color: #1AAD19;
-            }
+        .rank-tab.active {
+        color: #1AAD19;
+        }
 
-                .rank-tab.active::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -1px;
-                    left: 0;
-                    width: 100%;
-                    height: 2px;
-                    background-color: #1AAD19;
-                }
+        .rank-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #1AAD19;
+        }
 
-            .rank-tab:active {
-                background-color: #f5f5f5;
-            }
+        .rank-tab:active {
+        background-color: #f5f5f5;
+        }
 
         .rank-content {
-            padding-bottom: 60px;
-            background-color: #f5f5f5;
+        padding-bottom: 60px;
+        background-color: #f5f5f5;
         }
 
         .rank-list {
-            background-color: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 0 15px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 0 15px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .rank-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s;
         }
 
-            .rank-item:active {
-                background-color: #f5f5f5;
-            }
+        .rank-item:active {
+        background-color: #f5f5f5;
+        }
 
         .current-user {
-            background-color: #C8DCFA;
+        background-color: #C8DCFA;
         }
 
         .rank-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #eee;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-weight: bold;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #eee;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-weight: bold;
         }
 
-            .rank-number.top1 {
-                background-color: #FFD700;
-                color: #fff;
-            }
+        .rank-number.top1 {
+        background-color: #FFD700;
+        color: #fff;
+        }
 
-            .rank-number.top2 {
-                background-color: #C0C0C0;
-                color: #fff;
-            }
+        .rank-number.top2 {
+        background-color: #C0C0C0;
+        color: #fff;
+        }
 
-            .rank-number.top3 {
-                background-color: #CD7F32;
-                color: #fff;
-            }
+        .rank-number.top3 {
+        background-color: #CD7F32;
+        color: #fff;
+        }
 
         .user-info {
-            display: flex;
-            align-items: center;
-            flex: 1;
+        display: flex;
+        align-items: center;
+        flex: 1;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-            object-fit: cover;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+        object-fit: cover;
         }
 
         .user-name {
-            font-size: 16px;
+        font-size: 16px;
         }
 
         .rank-value {
-            font-weight: bold;
+        font-weight: bold;
         }
 
         .value-win {
-            color: #E64340;
+        color: #E64340;
         }
 
         .value-lose {
-            color: #1AAD19;
+        color: #1AAD19;
         }
 
         .extreme-tabs {
-            display: flex;
-            margin: 10px 15px;
-            background-color: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        display: flex;
+        margin: 10px 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .extreme-tab {
-            flex: 1;
-            text-align: center;
-            padding: 8px 0;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            background-color: #EAEBEC;
-            color: #06ae56 !important;
-            transition: all 0.2s;
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        background-color: #EAEBEC;
+        color: #06ae56 !important;
+        transition: all 0.2s;
         }
 
-            .extreme-tab.active {
-                background-color: #07C160 !important;
-                color: #fff !important;
-            }
+        .extreme-tab.active {
+        background-color: #07C160 !important;
+        color: #fff !important;
+        }
 
-            .extreme-tab:active:not(.active) {
-                background-color: #e0e0e0;
-            }
+        .extreme-tab:active:not(.active) {
+        background-color: #e0e0e0;
+        }
 
         .rank-section {
-            margin-bottom: 15px;
+        margin-bottom: 15px;
         }
 
         .rank-section-title {
-            padding: 10px 15px;
-            font-size: 16px;
-            font-weight: 500;
-            background-color: #f5f5f5;
-            margin: 0 15px 10px;
-            border-radius: 8px 8px 0 0;
+        padding: 10px 15px;
+        font-size: 16px;
+        font-weight: 500;
+        background-color: #f5f5f5;
+        margin: 0 15px 10px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        }
+
+        .period-selector {
+        width: 120px;
+        margin-left: 10px;
         }
 
         .weui-tabbar {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
         }
 
         .empty-state {
-            text-align: center;
-            padding: 40px 15px;
-            color: #888;
-            background-color: #fff;
-            border-radius: 8px;
-            margin: 0 15px;
+        text-align: center;
+        padding: 40px 15px;
+        color: #888;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0 15px;
         }
 
         .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            color: #ddd;
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: #ddd;
+        }
+
+        .title-content {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        }
+
+        .title-text {
+        white-space: nowrap;
+        margin-right: 10px;
+        }
+
+        select, input {
+        margin-left: 10px;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100px;
         }
     </style>
 </head>
@@ -218,28 +245,28 @@
 
     <!-- 主要榜单类型切换 -->
     <div class="rank-tabs">
-        <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = "amount" })"
-           class="rank-tab @(Model.RankType == "amount" ? "active" : "")">
+        <a href="@Url.Action("Rankings", "Home", new { periodType = @Model.PeriodType, period = @Model.Period, type = "amount", extreme = @Model.ExtremeType })"
+        class="rank-tab @(Model.RankType == "amount" ? "active" : "")">
             金额榜
         </a>
-        <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = "times" })"
-           class="rank-tab @(Model.RankType == "times" ? "active" : "")">
-            次数榜
+        <a href="@Url.Action("Rankings", "Home", new { periodType = @Model.PeriodType, period = @Model.Period, type = "times", extreme = @Model.ExtremeType })"
+        class="rank-tab @(Model.RankType == "times" ? "active" : "")">
+            赢次榜
         </a>
     </div>
 
     <!-- 时间范围切换 -->
     <div class="rank-tabs">
-        <a href="@Url.Action("Rankings", "Home", new { period = "total", type = Model.RankType })"
-           class="rank-tab @(@Model.Period == "total" ? "active" : "")">
+        <a href="@Url.Action("Rankings", "Home", new { periodType = "total", period = @Model.Period, type = Model.RankType, extreme = @Model.ExtremeType })"
+        class="rank-tab @(@Model.PeriodType == "total" ? "active" : "")">
             总榜
         </a>
-        <a href="@Url.Action("Rankings", "Home", new { period = "year", type = Model.RankType })"
-           class="rank-tab @(@Model.Period == "year" ? "active" : "")">
+        <a href="@Url.Action("Rankings", "Home", new { periodType = "year", type = Model.RankType, extreme = @Model.ExtremeType })"
+        class="rank-tab @(@Model.PeriodType == "year" ? "active" : "")">
             年榜
         </a>
-        <a href="@Url.Action("Rankings", "Home", new { period = "month", type = Model.RankType })"
-           class="rank-tab @(@Model.Period == "month" ? "active" : "")">
+        <a href="@Url.Action("Rankings", "Home", new { periodType = "month", type = Model.RankType, extreme = @Model.ExtremeType })"
+        class="rank-tab @(@Model.PeriodType == "month" ? "active" : "")">
             月榜
         </a>
     </div>
@@ -247,36 +274,42 @@
     <div class="rank-content">
         <div class="rank-section">
             <div class="rank-section-title">
-                @if (Model.RankType == "amount")
-                {
-                    if (Model.Period == "total")
+                <div class="title-content">
+                    @if (Model.RankType == "amount")
                     {
-                        <span>总金额排行</span>
-                    }
-                    else if (Model.Period == "year")
-                    {
-                        <span>年度金额排行</span>
-                    }
-                    else
-                    {
-                        <span>月度金额排行</span>
-                    }
-                }
-                else
-                {
-                    if (Model.Period == "total")
-                    {
-                        <span>总参与次数排行</span>
-                    }
-                    else if (Model.Period == "year")
-                    {
-                        <span>年度参与次数排行</span>
+                        if (Model.PeriodType == "total")
+                        {
+                            <span class="title-text">总金额排行</span>
+                        }
+                        else if (Model.PeriodType == "year")
+                        {
+                            <span class="title-text">年度金额排行</span>
+                            <select id="year-select"></select>
+                        }
+                        else
+                        {
+                            <span class="title-text">月度金额排行</span>
+                            <input type="text" id="yearMonthPeriod" placeholder="选择年月" readonly value="@Model.Period">
+                        }
                     }
                     else
                     {
-                        <span>月度参与次数排行</span>
+                        if (Model.PeriodType == "total")
+                        {
+                            <span class="title-text">总赢次数排行</span>
+                        }
+                        else if (Model.PeriodType == "year")
+                        {
+                            <span class="title-text">年度赢次数排行</span>
+                            <select id="year-select"></select>
+                        }
+                        else
+                        {
+                            <span class="title-text">月度赢次数排行</span>
+                            <input type="text" id="yearMonthPeriod" placeholder="选择年月" readonly value = "@Model.Period" >
+                        }
                     }
-                }
+                </div>
             </div>
             <div class="rank-list">
                 @if (Model.Rankings.Any())
@@ -285,6 +318,9 @@
                     {
                         var user = Model.Rankings[i];
                         var rank = i + 1;
+                        var className = Model.RankType == "amount"
+                            ? (user.TotalPoints > 0 ? "value-win" : user.TotalPoints < 0 ? "value-lose" : "")
+                            : (user.WinGameCount * 2 > user.TotalGameCount ? "value-win" : user.WinGameCount * 2 < user.TotalGameCount ? "value-lose" : "");
                         <div class="rank-item @(user.IsCurrentUser ? "current-user" : "")">
                             <div class="rank-number
                                 @(rank == 1 ? "top1" :
@@ -298,14 +334,14 @@
                                      alt="@user.Nickname 的头像" class="user-avatar">
                                 <div class="user-name">@user.Nickname</div>
                             </div>
-                            <div class="rank-value @(user.TotalPoints > 0 ? "value-win" : user.TotalPoints < 0 ? "value-lose" : "")">
+                            <div class="rank-value @className">
                                 @if (Model.RankType == "amount")
                                 {
-                                    @($"¥{user.TotalPoints:F2}")
+                                    @($"¥{user.TotalPoints}")
                                 }
                                 else
                                 {
-                                    @($"{user.GameCount} 局")
+                                    @($"赢：{user.WinGameCount} 局，总：{user.TotalGameCount} 局，胜率：{(int)(user.WinGameCount * 100 / user.TotalGameCount)}%")
                                 }
                             </div>
                         </div>
@@ -323,11 +359,11 @@
 
         <!-- 单日/单月极值榜 -->
         <div class="extreme-tabs">
-            <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = Model.RankType, extreme = "day" })"
+            <a href="@Url.Action("Rankings", "Home", new { periodType = @Model.PeriodType, period = @Model.Period, type = Model.RankType, extreme = "day" })"
                class="extreme-tab @(Model.ExtremeType == "day" ? "active" : "")">
                 单日极值
             </a>
-            <a href="@Url.Action("Rankings", "Home", new { period = @Model.Period, type = Model.RankType, extreme = "month" })"
+            <a href="@Url.Action("Rankings", "Home", new { periodType = @Model.PeriodType, period = @Model.Period, type = Model.RankType, extreme = "month" })"
                class="extreme-tab @(Model.ExtremeType == "month" ? "active" : "")">
                 单月极值
             </a>
@@ -363,7 +399,7 @@
                                 </div>
                             </div>
                             <div class="rank-value value-win">
-                                ¥@($"{item.TotalResult:F2}")
+                                ¥@($"{item.TotalResult}")
                             </div>
                         </div>
                     }
@@ -408,7 +444,7 @@
                                 </div>
                             </div>
                             <div class="rank-value value-lose">
-                                ¥@($"{item.TotalResult:F2}")
+                                ¥@($"{item.TotalResult}")
                             </div>
                         </div>
                     }
@@ -464,6 +500,48 @@
 
                 return false;
             });
+
+            // 处理年份选择
+            var years = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Yaers));
+            const yearSelect = $('#year-select');
+            const currentYear = new Date().getFullYear();
+
+            // 填充年份选项
+            years.forEach(year => {
+                const option = $('<option></option>').val(year).text(year);
+                yearSelect.append(option);
+            });
+            // 设置当前年为默认选中
+            yearSelect.val(@Model.Period);
+
+            // 年份选择变更事件
+            yearSelect.change(function() {
+                const selectedYear = $(this).val();
+                if (selectedYear) {
+                    window.location.href = redirectToRankings(selectedYear);
+                }
+            });
+
+            // 处理年月选择
+            var yaerMonths = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.YearMonths));
+            $("#yearMonthPeriod").select({
+                title: "选择年月",
+                items: yaerMonths,
+                onClose: function(selectedPeriod) {
+                    if (selectedPeriod && selectedPeriod.data && selectedPeriod.data.values) {
+                        window.location.href = redirectToRankings(selectedPeriod.data.values);
+                    }
+                }
+            });
+
+            // 构建跳转URL的函数
+            function redirectToRankings(period) {
+                // 获取基础URL
+                const baseUrl = "@Html.Raw(Url.Action("Rankings", "Home", new { periodType = Model.PeriodType, type = Model.RankType, extreme = Model.ExtremeType }))";
+                // 构建完整URL（处理已有参数）
+                const separator = baseUrl.indexOf('?') > -1 ? '&' : '?';
+                return baseUrl + separator + "period=" + encodeURIComponent(period);
+            }
         });
     </script>
 </body>

@@ -31,8 +31,13 @@
         public int TotalPoints { get; set; }
 
         /// <summary>
-        /// 参与牌局数
+        /// 总局数
         /// </summary>
-        public int GameCount { get; set; }
+        public int TotalGameCount { get; set; }
+
+        /// <summary>
+        /// 赢次
+        /// </summary>
+        public int WinGameCount { get; set; }
     }
 }

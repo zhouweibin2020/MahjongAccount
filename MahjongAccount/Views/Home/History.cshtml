@@ -276,7 +276,7 @@
                             赢: ¥@item.UserTotalWin | 输: ¥@item.UserTotalLose
                         </div>
                         <div class="result-amount @(item.UserNetResult > 0 ? "positive" : item.UserNetResult < 0 ? "negative" : "")">
-                            @(item.UserNetResult > 0 ? "+" : "")¥@Math.Abs(item.UserNetResult)
+                            ¥@(item.UserNetResult < 0 ? "-" : "")@Math.Abs(item.UserNetResult)
                         </div>
                     </div>
                     <a asp-action="Result" asp-controller="Game" asp-route-gameId="@item.GameId" class="detail-btn" id="detailBtn_@item.GameId">

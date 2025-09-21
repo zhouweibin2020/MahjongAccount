@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.Net.Http.Headers;
 
 namespace MahjongAccount.Controllers;
@@ -189,7 +190,7 @@ public class HomeController : Controller
     }
 
     // 排行榜页
-    public async Task<IActionResult> Rankings(string period = "total", string type = "amount", string extreme = "day")
+    public async Task<IActionResult> Rankings(string periodType = "total", string period = null, string type = "amount", string extreme = "day")
     {
         if (!IsUserLoggedIn())
         {
@@ -197,25 +198,55 @@ public class HomeController : Controller
         }
 
         var userId = GetCurrentUserId();
+        var years = await _context.Games
+            .Select(g => g.CreatedAt.Year)
+            .Distinct()
+            .OrderByDescending(year => year)
+            .Select(year => year.ToString())
+            .ToArrayAsync();
+        var yearMonths = await _context.Games
+            .Select(g => g.CreatedAt.Year * 100 + g.CreatedAt.Month)
+            .Distinct()
+            .OrderByDescending(ym => ym)
+            .Select(ym => ym.ToString())
+            .ToArrayAsync();
+
         // 准备时间筛选条件
         DateTime? startDate = null;
-        if (period == "month")
+        DateTime? endDate = null;
+        if (periodType == "month")
         {
-            // 当月第一天
-            startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            if (string.IsNullOrEmpty(period))
+            {
+                // 当月第一天
+                startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                period = startDate.Value.ToString("yyyyMM");
+            }
+            else
+            {
+                startDate = DateTime.ParseExact(period, "yyyyMM", CultureInfo.InvariantCulture);
+            }
+            endDate = startDate.Value.AddMonths(1).AddDays(-1);
         }
-        else if (period == "year")
+        else if (periodType == "year")
         {
-            // 当年第一天
-            startDate = new DateTime(DateTime.Now.Year, 1, 1);
+            if (string.IsNullOrEmpty(period))
+            {
+                // 当年第一天
+                startDate = new DateTime(DateTime.Now.Year, 1, 1);
+                period = startDate.Value.ToString("yyyy");
+            }
+            else
+            {
+                startDate = new DateTime(Convert.ToInt32(period), 1, 1);
+            }
+            endDate = startDate.Value.AddYears(1).AddDays(-1);
         }
 
-        // 金额榜或次数榜数据
+        // 金额榜或赢次榜数据
         var rankings = type == "amount"
-            ? await GetAmountRankings(startDate, userId)
-            : await GetTimesRankings(startDate, userId);
-        // 获取当前用户的排名信息
-        var currentUserRanking = rankings.FirstOrDefault(r => r.UserId == userId);
+            ? await GetAmountRankings(startDate, endDate, userId)
+            : await GetTimesRankings(startDate, endDate, userId);
 
         //// 极值榜数据（单日/单月）
         var topExtremes = extreme == "day"
@@ -228,19 +259,22 @@ public class HomeController : Controller
         // 构建视图模型
         var viewModel = new RankingsViewModel
         {
+            PeriodType = periodType,
             Period = period,
             RankType = type,
             ExtremeType = extreme,
             Rankings = rankings,
             TopExtremes = topExtremes,
-            BottomExtremes = bottomExtremes
+            BottomExtremes = bottomExtremes,
+            Yaers = years,
+            YearMonths = yearMonths
         };
 
         return View(viewModel);
     }
 
     // 获取金额排行榜数据
-    private async Task<List<UserRankingDto>> GetAmountRankings(DateTime? startDate, int userId)
+    private async Task<List<UserRankingDto>> GetAmountRankings(DateTime? startDate, DateTime? endDate, int userId)
     {
         return await _context.GameResults
             .Include(gr => gr.Game)  // 显式加载Game导航属性
@@ -250,7 +284,7 @@ public class HomeController : Controller
                 u => u.Id,
                 (gr, user) => new { gr, user }
             )
-            .Where(x => !startDate.HasValue || x.gr.Game.CreatedAt >= startDate)
+            .Where(x => (!startDate.HasValue || x.gr.Game.CreatedAt >= startDate) && (!endDate.HasValue || x.gr.Game.CreatedAt < endDate.Value.AddDays(1)))
             .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.AvatarUrl })
             .Select(g => new UserRankingDto
             {
@@ -258,8 +292,7 @@ public class HomeController : Controller
                 IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
                 AvatarUrl = g.Key.AvatarUrl,
-                TotalPoints = g.Sum(x => x.gr.NetResult),
-                GameCount = g.Select(x => x.gr.GameId).Distinct().Count()  // 增加参与局数
+                TotalPoints = g.Sum(x => x.gr.NetResult)               
             })
             .OrderByDescending(x => x.TotalPoints)
             .Take(10)
@@ -267,7 +300,7 @@ public class HomeController : Controller
     }
 
     // 获取次数排行榜数据
-    private async Task<List<UserRankingDto>> GetTimesRankings(DateTime? startDate, int userId)
+    private async Task<List<UserRankingDto>> GetTimesRankings(DateTime? startDate, DateTime? endDate, int userId)
     {
         return await _context.GameResults
             .Include(gr => gr.Game)  // 显式加载Game导航属性
@@ -277,7 +310,7 @@ public class HomeController : Controller
                 u => u.Id,
                 (gr, user) => new { gr, user }
             )
-            .Where(x => !startDate.HasValue || x.gr.Game.CreatedAt >= startDate)
+            .Where(x => (!startDate.HasValue || x.gr.Game.CreatedAt >= startDate) && (!endDate.HasValue || x.gr.Game.CreatedAt < endDate.Value.AddDays(1)))
             .GroupBy(x => new { x.user.Id, x.user.Nickname, x.user.AvatarUrl })
             .Select(g => new UserRankingDto
             {
@@ -285,9 +318,10 @@ public class HomeController : Controller
                 IsCurrentUser = g.Key.Id == userId,
                 Nickname = g.Key.Nickname,
                 AvatarUrl = g.Key.AvatarUrl,
-                GameCount = g.Count(x => x.gr.NetResult > 0)
+                TotalGameCount = g.Count(),
+                WinGameCount = g.Count(x => x.gr.NetResult > 0)
             })
-            .OrderByDescending(x => x.GameCount)
+            .OrderByDescending(x => x.WinGameCount)
             .Take(10)
             .ToListAsync<UserRankingDto>();
     }

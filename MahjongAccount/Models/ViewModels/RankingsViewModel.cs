@@ -10,7 +10,22 @@ namespace MahjongAccount.Models.ViewModels
         /// <summary>
         /// 榜单日期类型
         /// </summary>
+        public string PeriodType { get; set; }
+
+        /// <summary>
+        /// 榜单日期
+        /// </summary>
         public string Period { get; set; }
+
+        /// <summary>
+        /// 可选年份列表
+        /// </summary>
+        public string[] Yaers { get; set; }
+
+        /// <summary>
+        /// 可选月份列表
+        /// </summary>
+        public string[] YearMonths { get; set; }
 
         /// <summary>
         /// 榜单统计类型
